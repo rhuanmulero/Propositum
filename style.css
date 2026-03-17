@@ -1,156 +1,168 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-    background-color: #0b0f19;
-    color: #ffffff;
-    font-family: 'Inter', sans-serif;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+/* --- RESET E VARIÁVEIS APPLE UI --- */
+:root {
+    --apple-bg: #f5f5f7;
+    --apple-glass: rgba(255, 255, 255, 0.75);
+    --apple-border: rgba(0, 0, 0, 0.1);
+    --apple-text: #1d1d1f;
+    --apple-text-muted: #86868b;
+    --apple-blue: #0071e3;
+    --apple-blue-hover: #0077ED;
 }
 
-/* --- Interface do App --- */
-.app-layout { display: flex; flex-direction: column; height: 100%; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; }
 
-.top-bar { background: #111827; border-bottom: 1px solid #1f2937; padding: 30px; text-align: center; z-index: 10; }
-.top-bar h1 { font-family: 'Montserrat', sans-serif; font-size: 28px; color: #38bdf8; margin-bottom: 5px; }
-.top-bar p { color: #9ca3af; margin-bottom: 20px; font-size: 14px; }
+body { background-color: var(--apple-bg); color: var(--apple-text); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
 
-.input-area { display: flex; gap: 10px; max-width: 900px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
-.input-area input { flex: 2; min-width: 250px; background: #1f2937; border: 1px solid #374151; padding: 15px 20px; border-radius: 8px; color: white; font-size: 16px; outline: none; }
-.input-area input:focus { border-color: #38bdf8; }
-
-.template-select { flex: 1; min-width: 200px; background: #1f2937; border: 1px solid #374151; padding: 15px; border-radius: 8px; color: white; font-size: 16px; outline: none; cursor: pointer; }
-
-button { padding: 15px 25px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; border: none; transition: 0.3s; }
-#btnGenerate { background: #0ea5e9; color: white; }
-#btnGenerate:hover { background: #0284c7; }
-#btnGenerate:disabled { background: #475569; cursor: not-allowed; }
-#btnDownload { background: #10b981; color: white; }
-#btnDownload:hover { background: #059669; }
-
-/* --- Área de Scroll Horizontal --- */
-.workspace { flex: 1; background: #030712; overflow: hidden; position: relative; }
-.carousel-scroll-area { width: 100%; height: 100%; overflow-x: auto; overflow-y: hidden; padding: 40px; display: flex; align-items: center; }
-.carousel-scroll-area::-webkit-scrollbar { height: 12px; }
-.carousel-scroll-area::-webkit-scrollbar-track { background: #0f172a; border-radius: 6px; }
-.carousel-scroll-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 6px; }
-.carousel-container { display: flex; gap: 40px; }
-.empty-state { color: #475569; font-size: 18px; text-align: center; width: 100%; margin-top: 100px; }
-
-/* --- NOVA ESCALA PARA 1080x1350 --- */
-.slide-wrapper {
-    width: 540px;  /* 1080 * 0.5 */
-    height: 675px; /* 1350 * 0.5 */
-    flex-shrink: 0;
-    border-radius: 16px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+/* --- DOCK FLUTUANTE ESTILO MACOS --- */
+.floating-dock {
+    position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--apple-glass); backdrop-filter: blur(25px) saturate(180%); -webkit-backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid var(--apple-border); border-radius: 24px; padding: 20px 30px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08); z-index: 100; width: 95%; max-width: 1100px;
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    animation: slideDown 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* --- VARIÁVEIS DE DESIGN E LAYOUT BASE --- */
+@keyframes slideDown { from { transform: translate(-50%, -40px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+
+.dock-header h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.5px; }
+.badge { background: linear-gradient(90deg, #ff6b00, #ff8e3c); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 10px; text-transform: uppercase; margin-top: 4px; display: inline-block; }
+
+.dock-controls { display: flex; gap: 15px; align-items: center; flex: 1; justify-content: flex-end; }
+
+/* Inputs UI Premium */
+.input-group { position: relative; display: flex; align-items: center; }
+.input-group i { position: absolute; left: 14px; color: var(--apple-text-muted); width: 18px; height: 18px; }
+.input-group input, .input-group select {
+    background: rgba(255,255,255,0.8); border: 1px solid var(--apple-border); border-radius: 12px;
+    padding: 12px 14px 12px 40px; font-size: 14px; color: var(--apple-text); outline: none; transition: all 0.2s;
+}
+.input-group input { width: 280px; }
+.input-group select { width: 220px; cursor: pointer; appearance: none; }
+.input-group input:focus, .input-group select:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15); background: #fff; }
+
+/* Botões */
+button { display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; padding: 12px 20px; }
+button:active { transform: scale(0.96); }
+.btn-primary { background: var(--apple-text); color: white; }
+.btn-primary:hover { background: #000; }
+.btn-success { background: var(--apple-blue); color: white; }
+.btn-success:hover { background: var(--apple-blue-hover); }
+.btn-icon { background: rgba(0,0,0,0.05); color: var(--apple-text); padding: 12px 16px; }
+.btn-icon:hover { background: rgba(0,0,0,0.1); }
+.btn-icon i { width: 18px; height: 18px; }
+
+/* Área de Logo */
+.logo-upload-wrapper { display: flex; align-items: center; gap: 10px; }
+.logo-preview-box { width: 42px; height: 42px; border-radius: 8px; border: 1px dashed var(--apple-border); background-size: contain; background-position: center; background-repeat: no-repeat; display: none; background-color: #fff;}
+
+/* --- WORKSPACE & SCROLL --- */
+.workspace { flex: 1; padding-top: 100px; display: flex; flex-direction: column; background: var(--apple-bg); }
+.carousel-scroll-area { flex: 1; overflow-x: auto; overflow-y: hidden; padding: 40px; display: flex; align-items: center; }
+.carousel-scroll-area::-webkit-scrollbar { height: 10px; }
+.carousel-scroll-area::-webkit-scrollbar-track { background: transparent; }
+.carousel-scroll-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 10px; }
+.carousel-container { display: flex; gap: 30px; height: max-content; margin: auto 0; }
+
+.empty-state { text-align: center; color: var(--apple-text-muted); width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 1s; }
+.empty-icon { width: 80px; height: 80px; background: rgba(0,0,0,0.05); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--apple-text-muted); }
+.empty-state h3 { font-size: 24px; color: var(--apple-text); margin-bottom: 8px; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- ESTRUTURA DOS SLIDES (1080x1350) --- */
+.slide-wrapper { width: 432px; height: 540px; flex-shrink: 0; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: fadeUp 0.5s ease backwards; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
 .slide {
-    width: 1080px;
-    height: 1350px; /* NOVO TAMANHO RETRATO */
-    transform: scale(0.5); /* Escala de 50% para caber no monitor */
-    transform-origin: top left;
-    position: relative;
-    padding: 100px 80px; /* Mais padding vertical */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    border-radius: 32px; 
-    
-    /* Variáveis padrão (substituídas pelos templates) */
-    background: var(--bg-main);
-    color: var(--text-main);
-    border: 2px solid var(--border-color);
-}
-
-/* --- SISTEMA DE TEMPLATES --- */
-
-/* 1. Template Consultoria Tech (O original, azul) */
-.template-tech {
-    --bg-main: linear-gradient(135deg, #0f172a 0%, #020617 100%);
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --accent: #38bdf8;
-    --accent-glow: rgba(56, 189, 248, 0.2);
-    --accent-light: rgba(56, 189, 248, 0.1);
-    --border-color: #1e293b;
-    --card-bg: rgba(30, 41, 59, 0.7);
-    --card-border: #334155;
-    --grid-color: rgba(255,255,255,0.03);
-    --cta-bg: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
-    --btn-bg: linear-gradient(90deg, #0ea5e9, #2563eb);
-    --step-num: rgba(56, 189, 248, 0.15);
-}
-
-/* 2. Template Minimalista (Claro, clean, estilo agência/startup) */
-.template-minimal {
-    --bg-main: #ffffff;
-    --text-main: #111827;
-    --text-muted: #4b5563;
-    --accent: #2563eb; /* Azul escuro vibrante */
-    --accent-glow: rgba(37, 99, 235, 0.2);
-    --accent-light: rgba(37, 99, 235, 0.08);
-    --border-color: #e5e7eb;
-    --card-bg: #f9fafb;
-    --card-border: #e5e7eb;
-    --grid-color: rgba(0,0,0,0.02);
-    --cta-bg: #f8fafc;
-    --btn-bg: #2563eb;
-    --step-num: rgba(37, 99, 235, 0.08);
-}
-
-/* 3. Template Cyberpunk (Escuro com Neon Rosa/Cyan) */
-.template-neon {
-    --bg-main: #09090b;
-    --text-main: #ffffff;
-    --text-muted: #a1a1aa;
-    --accent: #ec4899; /* Rosa Neon */
-    --accent-glow: rgba(236, 72, 153, 0.5);
-    --accent-light: rgba(236, 72, 153, 0.1);
-    --border-color: #27272a;
-    --card-bg: #18181b;
-    --card-border: #3f3f46;
-    --grid-color: rgba(236, 72, 153, 0.05);
-    --cta-bg: radial-gradient(circle at center, #18181b 0%, #09090b 100%);
-    --btn-bg: #ec4899;
-    --step-num: rgba(236, 72, 153, 0.15);
-}
-
-/* Padrão de fundo (Grid) reativo ao template */
-.slide::before {
-    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background-image: linear-gradient(var(--grid-color) 2px, transparent 2px), linear-gradient(90deg, var(--grid-color) 2px, transparent 2px);
-    background-size: 60px 60px;
+    width: 1080px; height: 1350px; transform: scale(0.4); transform-origin: top left;
+    position: relative; padding: 100px 80px 200px 80px; /* Padding bottom maior para caber o footer */
+    display: flex; flex-direction: column; overflow: hidden; border-radius: 50px; /* Borda curva compensando a escala */
+    background: var(--bg-main); color: var(--text-main); border: 2px solid var(--border-color);
 }
 
 .slide > * { z-index: 1; position: relative; }
-.slide-title { font-family: 'Montserrat', sans-serif; font-size: 65px; color: var(--text-main); margin-bottom: 70px; border-left: 8px solid var(--accent); padding-left: 30px; line-height: 1.2;}
+.slide::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background-image: linear-gradient(var(--grid-color) 2px, transparent 2px), linear-gradient(90deg, var(--grid-color) 2px, transparent 2px); background-size: 80px 80px; }
 
-/* --- Tipo 1: CAPA --- */
-.slide.cover { justify-content: center; align-items: flex-start; }
-.slide.cover .tag { background: var(--accent-light); color: var(--accent); border: 2px solid var(--accent); padding: 15px 30px; border-radius: 50px; font-size: 30px; font-weight: 800; letter-spacing: 2px; margin-bottom: 60px; box-shadow: 0 0 30px var(--accent-glow); }
-.slide.cover h1 { font-family: 'Montserrat', sans-serif; font-size: 95px; font-weight: 900; line-height: 1.1; color: var(--text-main); margin-bottom: 50px; }
+/* Tipografia Base */
+.slide-title { font-family: 'Montserrat', sans-serif; font-size: 65px; color: var(--text-main); margin-bottom: 70px; border-left: 10px solid var(--accent); padding-left: 30px; line-height: 1.2;}
 
-/* --- Tipo 2: LISTA DE RECURSOS --- */
-.slide.feature_list .features-grid { display: flex; flex-direction: column; gap: 50px; flex: 1; justify-content: center; }
-.feature-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 50px 40px; display: flex; align-items: center; gap: 40px; backdrop-filter: blur(10px); }
-.feature-icon { min-width: 100px; height: 100px; background: var(--accent-light); border-radius: 20px; display: flex; justify-content: center; align-items: center; border: 1px solid var(--accent); color: var(--accent); }
-.feature-icon svg { width: 55px; height: 55px; }
-.feature-text h3 { font-family: 'Montserrat', sans-serif; font-size: 45px; margin-bottom: 15px; color: var(--text-main); }
-.feature-text p { font-size: 32px; color: var(--text-muted); line-height: 1.4; }
+/* --- RODAPÉ UNIVERSAL (White Label e Arraste) --- */
+.slide-footer { position: absolute; bottom: 60px; left: 80px; right: 80px; display: flex; justify-content: space-between; align-items: center; z-index: 10; border-top: 1px solid var(--border-color); padding-top: 40px; }
+.swipe-badge { border: 2px solid var(--accent); color: var(--accent); padding: 15px 30px; border-radius: 40px; font-size: 24px; font-weight: 700; background: var(--bg-main); font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 1px; }
+.brand-logo { max-height: 70px; max-width: 300px; object-fit: contain; }
 
-/* --- Tipo 3: PROCESSOS --- */
-.slide.process .process-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 50px; flex: 1; }
-.process-step { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 60px 50px; position: relative; display: flex; flex-direction: column; justify-content: center; }
-.step-number { position: absolute; top: 40px; right: 40px; font-family: 'Montserrat', sans-serif; font-size: 110px; font-weight: 900; color: var(--step-num); line-height: 1; }
-.process-step h3 { font-family: 'Montserrat', sans-serif; font-size: 45px; color: var(--text-main); margin-top: 40px; z-index: 2; line-height: 1.3;}
+/* --- TEMPLATES (ENGINE VISUAL) --- */
 
-/* --- Tipo 4: CTA (Final) --- */
+/* NOVO: Template Corporate PRO (Baseado na imagem EvoluRP) */
+.template-corporate {
+    --bg-main: #1f1f1f;
+    --text-main: #ffffff;
+    --text-muted: #d1d5db;
+    --accent: #ff6b00; /* Laranja da imagem */
+    --accent-glow: rgba(255, 107, 0, 0.3);
+    --border-color: #333333;
+    --card-bg: #2d5a27; /* Verde dos cards da imagem */
+    --card-border: #166534;
+    --grid-color: rgba(255,255,255,0.03);
+    --cta-bg: radial-gradient(circle at top, #2a2a2a 0%, #1f1f1f 100%);
+    --btn-bg: transparent;
+    --btn-border: 4px solid #ff6b00;
+    --step-num: rgba(255, 107, 0, 0.15);
+}
+
+.template-tech {
+    --bg-main: linear-gradient(135deg, #0f172a 0%, #020617 100%); --text-main: #f8fafc; --text-muted: #94a3b8;
+    --accent: #38bdf8; --border-color: #1e293b; --card-bg: rgba(30, 41, 59, 0.7); --card-border: #334155;
+    --grid-color: rgba(255,255,255,0.03); --cta-bg: radial-gradient(circle, #1e293b 0%, #020617 100%);
+    --btn-bg: linear-gradient(90deg, #0ea5e9, #2563eb); --btn-border: none; --step-num: rgba(56, 189, 248, 0.15);
+}
+
+.template-minimal {
+    --bg-main: #ffffff; --text-main: #111827; --text-muted: #4b5563;
+    --accent: #000000; --border-color: #e5e7eb; --card-bg: #f9fafb; --card-border: #e5e7eb;
+    --grid-color: rgba(0,0,0,0.03); --cta-bg: #f8fafc;
+    --btn-bg: #000000; --btn-border: none; --step-num: rgba(0, 0, 0, 0.05);
+}
+
+.template-neon {
+    --bg-main: #09090b; --text-main: #ffffff; --text-muted: #a1a1aa;
+    --accent: #ec4899; --border-color: #27272a; --card-bg: #18181b; --card-border: #3f3f46;
+    --grid-color: rgba(236, 72, 153, 0.05); --cta-bg: radial-gradient(circle, #18181b 0%, #09090b 100%);
+    --btn-bg: #ec4899; --btn-border: none; --step-num: rgba(236, 72, 153, 0.15);
+}
+
+/* --- TIPOS DE SLIDES --- */
+
+/* Capa */
+.slide.cover { justify-content: center; }
+.slide.cover .tag { background: var(--accent); color: #fff; padding: 15px 30px; border-radius: 8px; font-size: 28px; font-weight: 800; text-transform: uppercase; margin-bottom: 40px; display: inline-block; font-family: 'Montserrat', sans-serif;}
+.slide.cover h1 { font-family: 'Montserrat', sans-serif; font-size: 100px; font-weight: 900; line-height: 1.1; margin-bottom: 50px; text-wrap: balance;}
+
+/* NOVO: Notícia (Fake Portal) */
+.slide.news { justify-content: center; }
+.news-browser { background: #ffffff; border-radius: 20px; padding: 50px; box-shadow: 0 20px 50px rgba(0,0,0,0.2); margin-bottom: 60px; border: 1px solid #e5e7eb;}
+.news-header { display: flex; justify-content: space-between; border-bottom: 2px solid #f3f4f6; padding-bottom: 20px; margin-bottom: 30px; color: #6b7280; font-size: 24px; font-weight: 600; }
+.news-headline { font-family: 'Times New Roman', serif; font-size: 65px; color: #111827; font-weight: bold; line-height: 1.1; margin-bottom: 30px;}
+.news-sub { font-size: 28px; color: #4b5563; line-height: 1.5; }
+.slide.news ul { padding-left: 40px; }
+.slide.news li { font-size: 38px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.4; }
+.slide.news li strong { color: var(--text-main); }
+
+/* Cartões (Feature List) */
+.slide.feature_list .features-grid { display: flex; flex-direction: column; gap: 40px; flex: 1; justify-content: center; }
+.feature-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 50px; }
+.feature-text h3 { font-family: 'Montserrat', sans-serif; font-size: 42px; margin-bottom: 15px; color: var(--text-main); }
+.feature-text p { font-size: 30px; color: var(--text-muted); line-height: 1.4; }
+
+/* Processos / Steps */
+.slide.process .process-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; flex: 1; align-content: center;}
+.process-step { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 60px 40px; position: relative; text-align: center; }
+.step-number { font-family: 'Montserrat', sans-serif; font-size: 90px; font-weight: 900; color: var(--step-num); line-height: 1; margin-bottom: 20px;}
+.process-step h3 { font-family: 'Montserrat', sans-serif; font-size: 40px; color: var(--text-main); line-height: 1.3;}
+
+/* CTA */
 .slide.cta { text-align: center; justify-content: center; align-items: center; background: var(--cta-bg); }
-.slide.cta h2 { font-family: 'Montserrat', sans-serif; font-size: 85px; margin-bottom: 50px; color: var(--text-main); line-height: 1.1;}
-.slide.cta p { font-size: 40px; color: var(--text-muted); margin-bottom: 100px; max-width: 800px; line-height: 1.4; }
-.cta-button { background: var(--btn-bg); border: none; color: white; padding: 40px 80px; border-radius: 60px; font-family: 'Montserrat', sans-serif; font-size: 40px; font-weight: 800; box-shadow: 0 15px 40px var(--accent-glow); }
+.slide.cta h2 { font-family: 'Montserrat', sans-serif; font-size: 85px; margin-bottom: 40px; color: var(--text-main); line-height: 1.1;}
+.slide.cta p { font-size: 40px; color: var(--text-muted); margin-bottom: 80px; max-width: 800px; line-height: 1.4; }
+.cta-button { background: var(--btn-bg); border: var(--btn-border, none); color: var(--text-main); padding: 40px 80px; border-radius: 60px; font-family: 'Montserrat', sans-serif; font-size: 40px; font-weight: 800; text-align: center; }

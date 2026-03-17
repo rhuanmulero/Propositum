@@ -3,41 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Carrossel IA - 1080x1350</title>
+    <title>AI Carousel Studio | White Label</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Biblioteca para transformar HTML em Imagem -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Ícones UI -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="app-layout">
-        <header class="top-bar">
-            <h1>✦ AI Carousel Studio (1080x1350)</h1>
-            <p>Gere slides retrato profissionais, escolha o design e baixe instantaneamente</p>
-            <div class="input-area">
-                <input type="text" id="themeInput" placeholder="Digite o tema (ex: Liderança, IA, Marketing...)">
+        
+        <!-- Controle Flutuante Estilo Apple (Glassmorphism) -->
+        <header class="floating-dock">
+            <div class="dock-header">
+                <h2>Carousel Studio</h2>
+                <span class="badge">White Label</span>
+            </div>
+            
+            <div class="dock-controls">
+                <div class="input-group">
+                    <i data-lucide="sparkles"></i>
+                    <input type="text" id="themeInput" placeholder="Sobre o que vamos criar hoje? (ex: Liderança, IA)">
+                </div>
                 
-                <!-- Novo Seletor de Templates -->
-                <select id="templateSelect" class="template-select">
-                    <option value="template-tech">Consultoria Tech (Azul)</option>
-                    <option value="template-minimal">Minimalista (Claro)</option>
-                    <option value="template-neon">Cyberpunk (Neon)</option>
-                </select>
+                <div class="input-group select-group">
+                    <i data-lucide="palette"></i>
+                    <select id="templateSelect">
+                        <option value="template-corporate">Corporate PRO (Laranja/Dark)</option>
+                        <option value="template-tech">Tecnologia (Azul Escuro)</option>
+                        <option value="template-minimal">Minimalista (Claro/Clean)</option>
+                        <option value="template-neon">Cyberpunk (Neon/Dark)</option>
+                    </select>
+                </div>
 
-                <button id="btnGenerate">Gerar Carrossel</button>
-                <button id="btnDownload" style="display: none;">Baixar Imagens</button>
+                <!-- Upload de Logo -->
+                <div class="logo-upload-wrapper">
+                    <input type="file" id="logoInput" accept="image/png, image/jpeg, image/svg+xml" hidden>
+                    <button id="btnUploadLogo" class="btn-icon">
+                        <i data-lucide="image-plus"></i>
+                        <span>Inserir Logo</span>
+                    </button>
+                    <div id="logoPreview" class="logo-preview-box"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="btnGenerate" class="btn-primary">Gerar Slides</button>
+                    <button id="btnDownload" class="btn-success" style="display: none;">
+                        <i data-lucide="download"></i> Baixar HD
+                    </button>
+                </div>
             </div>
         </header>
 
         <main class="workspace">
             <div class="carousel-scroll-area">
                 <div id="carouselContainer" class="carousel-container">
-                    <div class="empty-state">Digite um tema, escolha um visual e clique em Gerar.</div>
+                    <div class="empty-state">
+                        <div class="empty-icon"><i data-lucide="layers" size="48"></i></div>
+                        <h3>Pronto para criar</h3>
+                        <p>Configure sua logo, digite um tema e veja a mágica acontecer.</p>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
     <script src="script.js"></script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
