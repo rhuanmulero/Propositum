@@ -1,0 +1,17 @@
+:root {
+    --apple-bg: #f5f5f7;
+    --apple-glass: rgba(255, 255, 255, 0.85);
+    --apple-border: rgba(0, 0, 0, 0.08);
+    --apple-text: #1d1d1f;
+    --apple-blue: #0071e3;
+    
+    --brand-color: #ea580c; 
+    --brand-rgb: 234, 88, 12;
+    --bg-color: #081225;
+    --bg-rgb: 8, 18, 37;
+    --text-color: #ffffff;
+    --text-rgb: 255, 255, 255;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background-color: var(--apple-bg); font-family: -apple-system, "Inter", sans-serif; height: 100vh; overflow: hidden; display: flex; flex-direction: column; color: var(--apple-text); }

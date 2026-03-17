@@ -4,19 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Propositum | Studio</title>
-    <link rel="stylesheet" href="style.css">
+    <!-- Importa o Main CSS -->
+    <link rel="stylesheet" href="css/main.css">
     
-    <!-- Fontes e Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- Cropper.js (Para cortar imagens) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 </head>
 <body>
+    
     <div class="app-layout">
+        <!-- Seu HTML continua EXATAMENTE igual aqui -->
         
         <!-- DOCK FLUTUANTE -->
         <header class="floating-dock">
@@ -24,24 +25,19 @@
                 <h2>Propositum</h2>
                 <span class="badge">PRO</span>
             </div>
-            
             <div class="dock-controls">
-                
                 <div class="input-wrap">
                     <i data-lucide="key" class="dock-icon"></i>
                     <input type="password" id="apiKeyInput" placeholder="Gemini API (Opcional)">
                 </div>
-
                 <div class="input-wrap">
                     <i data-lucide="sparkles" class="dock-icon"></i>
                     <input type="text" id="themeInput" placeholder="Ex: Gestão de Projetos">
                 </div>
-                
                 <div class="input-wrap">
                     <i data-lucide="link" class="dock-icon"></i>
                     <input type="text" id="websiteInput" placeholder="seusite.com.br" value="seusite.com.br">
                 </div>
-
                 <div class="input-wrap select-group">
                     <i data-lucide="layout-template" class="dock-icon"></i>
                     <select id="templateSelect">
@@ -54,10 +50,7 @@
                         <option value="layout-bold">7. Brutalista/Bold</option>
                     </select>
                 </div>
-
                 <div class="dock-divider"></div>
-
-                <!-- Controles Customização Visual -->
                 <div class="wl-controls">
                     <div class="color-picker-wrap" title="Cor da Marca">
                         <input type="color" id="brandColor" value="#ea580c">
@@ -68,16 +61,13 @@
                     <div class="color-picker-wrap" title="Cor do Texto">
                         <input type="color" id="textColor" value="#ffffff">
                     </div>
-                    
                     <button id="btnLogoUpload" class="btn-icon-minimal" title="Inserir Logo">
                         <i data-lucide="image-plus"></i>
                     </button>
                     <input type="file" id="logoInput" accept="image/*" hidden>
                     <input type="file" id="slideImageInput" accept="image/*" hidden>
                 </div>
-
                 <div class="dock-divider"></div>
-
                 <div class="action-buttons">
                     <button id="btnGenerate" class="btn-primary">
                         <span id="btnGenText">Gerar Carrossel</span>
@@ -123,7 +113,8 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Script alterado para type module -->
+    <script type="module" src="js/main.js"></script>
     <script>lucide.createIcons();</script>
 </body>
 </html>

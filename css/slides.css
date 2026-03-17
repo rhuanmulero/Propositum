@@ -1,0 +1,38 @@
+/* GUIAS E EDIÇÃO */
+.guide-line { position: absolute; background-color: #f10594; z-index: 9999; pointer-events: none; display: none; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
+.guide-v { width: 1.5px; height: 100%; top: 0; transform: translateX(-50%); }
+.guide-h { width: 100%; height: 1.5px; left: 0; transform: translateY(-50%); }
+
+.draggable { position: relative; cursor: grab; }
+.draggable:active { cursor: grabbing; }
+
+[contenteditable="true"] { outline: none; border-radius: 8px; transition: outline 0.2s, background 0.2s; }
+[contenteditable="true"]:hover { outline: 2px dashed rgba(var(--text-rgb), 0.4); cursor: text; background: rgba(var(--text-rgb), 0.05); }[contenteditable="true"]:focus { outline: 2px solid var(--brand-color); background: rgba(0,0,0,0.3); cursor: text; }
+
+.editable-img { transition: filter 0.3s, outline 0.3s; cursor: pointer; -webkit-user-drag: none; }
+.editable-img:hover { outline: 4px dashed var(--brand-color); outline-offset: -4px; filter: brightness(0.6); }
+
+/* BASE DOS SLIDES */
+.slide-wrapper { width: 432px; height: 540px; flex-shrink: 0; position: relative; border-right: 2px dashed rgba(255,255,255,0.25); }
+.slide-wrapper:last-child { border-right: none; }
+.slide { width: 1080px; height: 1350px; transform: scale(0.4); transform-origin: top left; position: relative; overflow: hidden; display: flex; flex-direction: column; background-color: var(--bg-color); color: var(--text-color); }
+
+.slide-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; pointer-events: auto;}
+.slide-gradient { position: absolute; inset: 0; z-index: 2; pointer-events: none;}
+
+.slide-content { flex: 1; display: flex; flex-direction: column; padding: 80px 80px 20px 80px; z-index: 10; position: relative; pointer-events: none;}
+.slide-content > *, .brand-logo-container, .swipe-btn, .source-link { pointer-events: auto; }
+.grid, .features-list { pointer-events: none; }
+.feature-card, .step-card, .top-img-container { pointer-events: auto; }
+
+/* RODAPÉS */
+.brand-logo-container { height: 60px; display: flex; align-items: center; }
+.custom-logo-img { max-height: 60px; max-width: 300px; object-fit: contain; }
+.default-logo-text { font-family: 'Montserrat', sans-serif; font-size: 42px; font-weight: 900; letter-spacing: 1px;}
+
+.footer-tech { height: 140px; padding: 0 80px 60px 80px; display: flex; justify-content: space-between; align-items: flex-end; z-index: 50; position: relative; flex-shrink: 0; pointer-events: none;}
+.footer-tech .swipe-btn { border: 2px solid rgba(var(--text-rgb), 0.2); padding: 15px 35px; border-radius: 50px; font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 700; color: rgba(var(--text-rgb), 0.8); background: transparent; pointer-events: auto;}
+
+.footer-corp { height: 220px; padding: 0 80px 40px 80px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 50; position: relative; flex-shrink: 0; pointer-events: none;}
+.footer-corp .swipe-btn { border: 3px solid var(--brand-color); padding: 18px 45px; border-radius: 50px; font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; color: var(--text-color); background: transparent; margin-bottom: 35px; pointer-events: auto;}
+.footer-corp .source-link { font-size: 16px; color: rgba(var(--text-rgb), 0.6); margin-top: 25px; text-align: center; pointer-events: auto;}
