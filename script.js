@@ -1,16 +1,40 @@
 let customLogoUrl = null;
+let targetImageToReplace = null; 
 
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '37, 99, 235';
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '234, 88, 12';
 }
 
-document.getElementById('brandColor').addEventListener('input', (e) => {
-    const hex = e.target.value;
-    const rgb = hexToRgb(hex);
-    document.documentElement.style.setProperty('--brand-color', hex);
-    document.documentElement.style.setProperty('--brand-rgb', rgb);
+function updateColors(bg, brand) {
+    document.getElementById('bgColor').value = bg;
+    document.getElementById('brandColor').value = brand;
+    document.documentElement.style.setProperty('--bg-color', bg);
+    document.documentElement.style.setProperty('--bg-rgb', hexToRgb(bg));
+    document.documentElement.style.setProperty('--brand-color', brand);
+    document.documentElement.style.setProperty('--brand-rgb', hexToRgb(brand));
+}
+
+// Escuta Mudanças de Template para Auto-Ajustar as Cores
+document.getElementById('templateSelect').addEventListener('change', (e) => {
+    const val = e.target.value;
+    const defaultColors = {
+        'layout-tech': { bg: '#081225', brand: '#ea580c' },
+        'layout-corp': { bg: '#18181b', brand: '#ea580c' },
+        'layout-minimal': { bg: '#ffffff', brand: '#000000' },
+        'layout-neon': { bg: '#09090b', brand: '#ec4899' },
+        'layout-editorial': { bg: '#f4f0ec', brand: '#8b4513' },
+        'layout-glass': { bg: '#0f172a', brand: '#3b82f6' },
+        'layout-bold': { bg: '#fbbf24', brand: '#000000' }
+    };
+    if (defaultColors[val]) {
+        updateColors(defaultColors[val].bg, defaultColors[val].brand);
+    }
 });
+
+// Atualizações Manuais de Cor
+document.getElementById('brandColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, e.target.value));
+document.getElementById('bgColor').addEventListener('input', (e) => updateColors(e.target.value, document.getElementById('brandColor').value));
 
 document.getElementById('btnLogoUpload').addEventListener('click', () => document.getElementById('logoInput').click());
 document.getElementById('logoInput').addEventListener('change', (e) => {
@@ -21,14 +45,31 @@ document.getElementById('logoInput').addEventListener('change', (e) => {
         customLogoUrl = ev.target.result;
         const btn = document.getElementById('btnLogoUpload');
         btn.innerHTML = '<i data-lucide="check" style="color:var(--brand-color);"></i>';
-        btn.style.borderColor = 'var(--brand-color)';
         lucide.createIcons();
-        
-        document.querySelectorAll('.brand-logo-container').forEach(container => {
-            container.innerHTML = `<img src="${customLogoUrl}" class="custom-logo-img">`;
-        });
+        document.querySelectorAll('.brand-logo-container').forEach(container => container.innerHTML = `<img src="${customLogoUrl}" class="custom-logo-img">`);
     };
     reader.readAsDataURL(file);
+});
+
+document.getElementById('carouselContainer').addEventListener('click', (e) => {
+    if (e.target.classList.contains('editable-img')) {
+        targetImageToReplace = e.target;
+        document.getElementById('slideImageInput').click();
+    }
+});
+
+document.getElementById('slideImageInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        if (targetImageToReplace) {
+            targetImageToReplace.src = ev.target.result;
+            targetImageToReplace = null;
+        }
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; 
 });
 
 const imgBank =[
@@ -39,61 +80,88 @@ const imgBank =[
 ];
 const getImg = () => imgBank[Math.floor(Math.random() * imgBank.length)];
 
-const svgChart = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`;
-const svgCode = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`;
+const getIcon = (idx) => {
+    const iconNames =['bar-chart-2', 'users', 'code', 'trending-up', 'check-circle'];
+    return `<i data-lucide="${iconNames[idx % iconNames.length]}" style="width: 32px; height: 32px;"></i>`;
+};
 
-// --- CONSTRUTORES DE CONTEÚDO (Isolados do Rodapé) ---
-function buildTechSlide(slide) {
+// --- ESTRUTURA A (Tech, Minimal, Neon, Glass) ---
+function buildStructureA(slide) {
     let bgHtml = ''; let contentHtml = '';
+    const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
+
     if (slide.type === 'cover') {
-        bgHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
-        contentHtml = `<div class="tag">${slide.tag}</div><h1>${slide.title}</h1>`;
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        contentHtml = `<div class="tag" contenteditable="true" spellcheck="false">${slide.tag}</div>
+                       <h1 contenteditable="true" spellcheck="false">${slide.title}</h1>`;
     } else if (slide.type === 'features') {
-        const cards = slide.items.map((i, idx) => {
-            const opacities = [1, 0.8, 0.6, 0.4];
+        const cards = slide.items.slice(0, 3).map((i, idx) => {
             return `<div class="feature-card">
-                <div class="icon-box" style="background: rgba(var(--brand-rgb), ${opacities[idx%4]});">${idx%2===0?svgChart:svgCode}</div>
-                <div class="feature-text"><h3>${i.title}</h3><p>${i.desc}</p></div>
+                <div class="icon-box">${getIcon(idx)}</div>
+                <div class="feature-text"><h3 contenteditable="true" spellcheck="false">${i.title}:</h3> <p contenteditable="true" spellcheck="false">${i.desc}</p></div>
             </div>`;
         }).join('');
-        contentHtml = `<img src="${getImg()}" class="top-banner" crossorigin="anonymous"><h2>${slide.title}</h2><p class="sub">${slide.subtitle}</p>${cards}`;
+        contentHtml = `<div class="top-img-container"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        <h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="sub" contenteditable="true" spellcheck="false">${slide.subtitle}</p>${cards}`;
     } else if (slide.type === 'process') {
-        const steps = slide.items.map((i, idx) => `<div class="step-card"><div class="step-num">${idx+1}</div><h3>${i.title}</h3><p>${i.desc}</p></div>`).join('');
-        contentHtml = `<h2>${slide.title}</h2><p class="sub">${slide.subtitle}</p><div class="grid">${steps}</div>`;
+        const steps = slide.items.map((i, idx) => `<div class="step-card"><div class="step-num">${idx+1}</div><h3 contenteditable="true" spellcheck="false">${i.title}</h3><p contenteditable="true" spellcheck="false">${i.desc}</p></div>`).join('');
+        contentHtml = `<h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="sub" contenteditable="true" spellcheck="false">${slide.subtitle}</p>
+        <div class="grid">${steps}</div>
+        ${slide.footerText ? `<p class="process-footer" contenteditable="true" spellcheck="false">${slide.footerText}</p>` : ''}`;
     } else if (slide.type === 'cta') {
-        contentHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><h2>${slide.title}</h2><p>${slide.desc}</p><button class="btn-cta">${slide.button}</button>`;
+        contentHtml = `<div class="top-img-container"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        <h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="desc" contenteditable="true" spellcheck="false">${slide.desc}</p>
+        <button class="btn-cta" contenteditable="true" spellcheck="false">${slide.button}</button>
+        <p class="website-link" contenteditable="true" spellcheck="false">${siteUrl}</p>`;
     }
     return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
 }
 
-function buildCorpSlide(slide) {
+// --- ESTRUTURA B (Corp, Editorial, Bold) ---
+function buildStructureB(slide) {
     let bgHtml = ''; let contentHtml = '';
+    const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
+
     if (slide.type === 'cover') {
-        bgHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
-        contentHtml = `<div class="tag">${slide.tag}</div><h1>${slide.title}</h1>`;
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        contentHtml = `<div class="tag" contenteditable="true" spellcheck="false">${slide.tag}</div>
+                       <h1 contenteditable="true" spellcheck="false">${slide.title}</h1>`;
     } else if (slide.type === 'news') {
-        const bullets = slide.bullets.map(b => `<li>${b}</li>`).join('');
+        const bullets = slide.bullets.map(b => `<li contenteditable="true" spellcheck="false">${b}</li>`).join('');
         contentHtml = `
             <div class="browser">
-                <div class="browser-header"><span>Q Buscar</span><span class="brand">PROPOSITUM</span><span>Entrar</span></div>
-                <div class="headline">${slide.newsHeadline}</div>
-                <div class="subheadline">${slide.newsSub}</div>
+                <div class="browser-header">
+                    <span><i data-lucide="search" style="width:16px;"></i> Buscar</span>
+                    <span class="brand" contenteditable="true" spellcheck="false">Valor <span>Dino</span></span>
+                    <span><i data-lucide="user" style="width:16px;"></i> Entrar</span>
+                </div>
+                <div class="headline" contenteditable="true" spellcheck="false">${slide.newsHeadline}</div>
+                <div class="subheadline" contenteditable="true" spellcheck="false">${slide.newsSub}</div>
             </div>
-            <h2>${slide.title}</h2><ul>${bullets}</ul>
+            <h2 contenteditable="true" spellcheck="false">${slide.title}</h2><ul class="news-bullets">${bullets}</ul>
         `;
     } else if (slide.type === 'features') {
-        const cards = slide.items.map(i => `<div class="feature-card"><h3>${i.title}:</h3> <p>${i.desc}</p></div>`).join('');
-        contentHtml = `<h2>${slide.title}</h2>${cards}`;
+        const cards = slide.items.slice(0, 3).map(i => `<div class="feature-card"><h3 contenteditable="true" spellcheck="false">${i.title}:</h3> <p contenteditable="true" spellcheck="false">${i.desc}</p></div>`).join('');
+        contentHtml = `<h2 contenteditable="true" spellcheck="false">${slide.title}</h2><div class="features-list">${cards}</div>`;
     } else if (slide.type === 'cta') {
-        contentHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><h2>${slide.title}</h2><p>${slide.desc}</p><button class="btn-cta">${slide.button}</button>`;
+        contentHtml = `<div class="top-img-container"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        <h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="desc" contenteditable="true" spellcheck="false">${slide.desc}</p>
+        <button class="btn-cta" contenteditable="true" spellcheck="false">${slide.button}</button>
+        <p class="website-link" contenteditable="true" spellcheck="false" style="margin-top: 30px; font-size: 26px;">${siteUrl}</p>`;
     }
     return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
 }
 
-// --- RENDERIZADOR COM RODAPÉ ISOLADO ---
+// --- RENDERIZADOR ---
 function renderCarousel(data, template) {
     const container = document.getElementById('carouselContainer');
     container.innerHTML = '';
+
+    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
 
     data.slides.forEach((slide, index) => {
         const isLast = index === data.slides.length - 1;
@@ -102,77 +170,92 @@ function renderCarousel(data, template) {
         
         const slideDiv = document.createElement('div');
         let slideClassType = slide.type;
-        if(template === 'layout-tech' && slide.type === 'news') slideClassType = 'features';
-        if(template === 'layout-corp' && slide.type === 'process') slideClassType = 'features';
+        if(isStructureA && slide.type === 'news') slideClassType = 'features';
+        if(!isStructureA && slide.type === 'process') slideClassType = 'features';
         
         slideDiv.className = `slide ${template} slide-${slideClassType}`;
 
-        let slideHTML = template === 'layout-tech' ? buildTechSlide(slide) : buildCorpSlide(slide);
+        let slideHTML = isStructureA ? buildStructureA(slide) : buildStructureB(slide);
         
-        const logoContent = customLogoUrl ? `<img src="${customLogoUrl}" class="custom-logo-img">` : `<span class="default-logo-text">Sua Marca</span>`;
+        const logoContent = customLogoUrl ? `<img src="${customLogoUrl}" class="custom-logo-img">` : `<span class="default-logo-text" contenteditable="true" spellcheck="false">Sua Marca</span>`;
 
-        // Rodapé anexado por fora do conteúdo, guiado por flexbox para nunca sofrer sobreposição
-        const footerHtml = `
-            <div class="slide-footer">
-                <div class="brand-logo-container">${logoContent}</div>
-                ${!isLast ? `<div class="swipe-btn">ARRASTE PARA O LADO &gt;</div>` : '<div></div>'}
-            </div>
-        `;
+        let footerHtml = '';
+        if (isStructureA) {
+            footerHtml = `
+                <div class="slide-footer footer-tech">
+                    <div class="brand-logo-container">${logoContent}</div>
+                    ${!isLast ? `<div class="swipe-btn">ARRASTA PARA O LADO &gt;</div>` : `<div></div>`}
+                </div>
+            `;
+        } else {
+            footerHtml = `
+                <div class="slide-footer footer-corp">
+                    ${!isLast ? `<div class="swipe-btn">ARRASTE PARA O LADO &gt;</div>` : ''}
+                    <div class="brand-logo-container">${logoContent}</div>
+                    ${isLast ? `<div class="source-link" contenteditable="true" spellcheck="false">Fonte da notícia: https://noticia.com.br</div>` : ''}
+                </div>
+            `;
+        }
 
         slideDiv.innerHTML = slideHTML + footerHtml;
         wrapper.appendChild(slideDiv);
         container.appendChild(wrapper);
     });
 
+    lucide.createIcons();
     document.getElementById('btnDownload').style.display = 'flex';
 }
 
 function getMockData(template, topic) {
     const t = topic || "Seu Negócio";
-    if (template === 'layout-tech') {
+    const isStructureA = ['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
+    
+    if (isStructureA) {
         return {
             slides:[
-                { type: "cover", tag: "TENDÊNCIA", title: `Como a Inovação Está Redefinindo o ${t}` },
-                { type: "features", title: "Decisões Estratégicas", subtitle: "Transforme dados em ativos:", items:[
-                    { title: "Tomada de Decisão", desc: "Antecipe o mercado." },
-                    { title: "Previsão", desc: "Saiba o que o cliente quer." },
-                    { title: "Automação", desc: "Deixe a IA trabalhar." }
+                { type: "cover", tag: "NOVA TENDÊNCIA", title: `O Futuro da ${t} já começou` },
+                { type: "features", title: "Decisões baseadas em dados reais.", subtitle: "O sucesso exige ativos estratégicos:", items:[
+                    { title: "Tomada de decisão", desc: "Antecipe tendências de mercado." },
+                    { title: "Previsão de Demanda", desc: "Saiba o que seu cliente quer." },
+                    { title: "Automação", desc: "Deixe tarefas para os algoritmos." }
                 ]},
-                { type: "process", title: "Qual o processo?", subtitle: "O Passo a Passo:", items:[
-                    { title: "Mapeamento", desc: "Análise da sua operação." },
-                    { title: "Estratégia", desc: "Definição de metas." },
-                    { title: "Execução", desc: "Uso das ferramentas." },
-                    { title: "Resultados", desc: "Acompanhamento real." }
-                ]},
-                { type: "cta", title: "Pronto para inovar?", desc: "Eleve sua operação a um novo patamar.", button: "Agende uma Reunião" }
+                { type: "process", title: "Qual o processo?", subtitle: "O Passo a Passo ideal:", items:[
+                    { title: "Coleta", desc: "Estruturamos dados brutos." },
+                    { title: "Modelagem", desc: "Modelos matemáticos." },
+                    { title: "Validação", desc: "Machine Learning rápido." },
+                    { title: "Entrega", desc: "Precisão operacional." }
+                ], footerText: "Garantimos a excelência com base no seu negócio." },
+                { type: "cta", title: "Pronto para inovar?", desc: "Nossa equipe está pronta para elevar sua eficiência.", button: "Entre em contato conosco" }
             ]
         };
     } else {
         return {
             slides:[
-                { type: "cover", tag: "URGENTE!", title: `Por que as empresas estão investindo em ${t}` },
-                { type: "news", newsHeadline: `Mercado acelera adoção de ${t}`, newsSub: "A digitalização se torna obrigatória diante da pressão por eficiência e produtividade.", title: "Não há espaço para lentidão.", bullets:[
-                    "<strong>O Fato:</strong> A competitividade depende de ações rápidas.",
-                    "<strong>O Risco:</strong> Empresas atrasadas perderão fatia de mercado."
+                { type: "cover", tag: "URGENTE!", title: `Por que investir em ${t} hoje mesmo` },
+                { type: "news", newsHeadline: `Mercado acelera mudanças em 2026`, newsSub: "Empresas aceleram a digitalização diante da pressão por eficiência ininterrupta.", title: "Não há espaço para erros.", bullets:[
+                    "A competitividade agora depende de decisões ágeis.",
+                    "Se você ainda gere processos defasados, está fora do jogo."
                 ]},
-                { type: "features", title: `Pilares Fundamentais:`, items:[
-                    { title: "Automação", desc: "Substituir trabalho braçal por processos eficientes." },
-                    { title: "Dados", desc: "A informação não pode esperar o fim do mês." },
-                    { title: "Integração", desc: "Base única unindo todos os setores." }
+                { type: "features", title: `Os pilares do sucesso:`, items:[
+                    { title: "Automação", desc: "Substituir o trabalho braçal por processos limpos." },
+                    { title: "Dados Reais", desc: "A informação não pode esperar em planilhas." },
+                    { title: "Integração", desc: "O sistema como base única da empresa." }
                 ]},
-                { type: "cta", title: "Sua empresa precisa evoluir.", desc: "Nós temos as soluções que o mercado exige hoje.", button: "Fale com nossos especialistas" }
+                { type: "cta", title: "Sua empresa precisa evoluir.", desc: "Fomos desenhados para entregar exatamente o que você exige.", button: "Clique no link e agende" }
             ]
         };
     }
 }
 
 async function fetchGeminiData(theme, template, apiKey) {
+    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-    const promptTech = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}]},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
-    const promptCorp = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Noticia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    
+    const promptTech = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}] // MÁX 3 ITENS},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}],"footerText":"Rodapé"},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    const promptCorp = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}] // MÁX 3 ITENS},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
 
     try {
-        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: template === 'layout-tech' ? promptTech : promptCorp }] }] }) });
+        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });
         if (!response.ok) throw new Error("Chave inválida");
         const data = await response.json();
         return JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim());
@@ -181,7 +264,6 @@ async function fetchGeminiData(theme, template, apiKey) {
     }
 }
 
-// --- BOTÃO GERAR ---
 document.getElementById('btnGenerate').addEventListener('click', async () => {
     const apiKey = document.getElementById('apiKeyInput').value.trim();
     const themeStr = document.getElementById('themeInput').value.trim();
@@ -205,7 +287,6 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
     btn.disabled = false;
 });
 
-// --- EXPORTAR HD (1080x1350) ---
 document.getElementById('btnDownload').addEventListener('click', async () => {
     const btn = document.getElementById('btnDownload');
     const originalContent = btn.innerHTML;
@@ -214,6 +295,8 @@ document.getElementById('btnDownload').addEventListener('click', async () => {
     btn.disabled = true;
     lucide.createIcons();
 
+    if (document.activeElement) document.activeElement.blur();
+
     const slides = document.querySelectorAll('.slide');
     for (let i = 0; i < slides.length; i++) {
         const slide = slides[i];
@@ -221,7 +304,7 @@ document.getElementById('btnDownload').addEventListener('click', async () => {
         const originalTransform = slide.style.transform;
         slide.style.transform = 'none';
         
-        const canvas = await html2canvas(slide, { width: 1080, height: 1350, scale: 1, useCORS: true });
+        const canvas = await html2canvas(slide, { width: 1080, height: 1350, scale: 1, useCORS: true, backgroundColor: null });
         
         slide.style.transform = originalTransform;
 

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     
     <!-- Fontes Premium -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -15,7 +15,7 @@
 <body>
     <div class="app-layout">
         
-        <!-- DOCK FLUTUANTE (APPLE STYLE) -->
+        <!-- DOCK FLUTUANTE (Menu Refinado) -->
         <header class="floating-dock">
             <div class="dock-header">
                 <h2>Propositum</h2>
@@ -24,34 +24,53 @@
             
             <div class="dock-controls">
                 
-                <div class="input-group">
-                    <i data-lucide="key"></i>
-                    <input type="password" id="apiKeyInput" placeholder="Google Gemini API (Opcional)">
+                <div class="input-wrap">
+                    <i data-lucide="key" class="dock-icon"></i>
+                    <input type="password" id="apiKeyInput" placeholder="Gemini API (Opcional)">
                 </div>
 
-                <div class="input-group">
-                    <i data-lucide="sparkles"></i>
+                <div class="input-wrap">
+                    <i data-lucide="sparkles" class="dock-icon"></i>
                     <input type="text" id="themeInput" placeholder="Ex: Gestão de Projetos">
                 </div>
                 
-                <div class="input-group select-group">
-                    <i data-lucide="layout-template"></i>
+                <div class="input-wrap">
+                    <i data-lucide="link" class="dock-icon"></i>
+                    <input type="text" id="websiteInput" placeholder="seusite.com.br" value="seusite.com.br">
+                </div>
+
+                <div class="input-wrap select-group">
+                    <i data-lucide="layout-template" class="dock-icon"></i>
                     <select id="templateSelect">
-                        <option value="layout-tech">1. Tech/Ícones (Fluido)</option>
-                        <option value="layout-corp">2. Blocos/Notícia (Sólido)</option>
+                        <option value="layout-tech">1. Tech/Ícones</option>
+                        <option value="layout-corp">2. Blocos/Notícia</option>
+                        <option value="layout-minimal">3. Minimalista</option>
+                        <option value="layout-neon">4. Cyber/Neon</option>
+                        <option value="layout-editorial">5. Editorial/Revista</option>
+                        <option value="layout-glass">6. Glassmorphism</option>
+                        <option value="layout-bold">7. Brutalista/Bold</option>
                     </select>
                 </div>
 
-                <!-- Controles White Label -->
+                <div class="dock-divider"></div>
+
+                <!-- Controles Customização Visual -->
                 <div class="wl-controls">
                     <div class="color-picker-wrap" title="Cor da Marca">
-                        <input type="color" id="brandColor" value="#2563eb">
+                        <input type="color" id="brandColor" value="#ea580c">
                     </div>
-                    <button id="btnLogoUpload" class="btn-icon" title="Inserir Logo da Marca">
+                    <div class="color-picker-wrap" title="Cor de Fundo">
+                        <input type="color" id="bgColor" value="#081225">
+                    </div>
+                    
+                    <button id="btnLogoUpload" class="btn-icon-minimal" title="Inserir Logo">
                         <i data-lucide="image-plus"></i>
                     </button>
                     <input type="file" id="logoInput" accept="image/*" hidden>
+                    <input type="file" id="slideImageInput" accept="image/*" hidden>
                 </div>
+
+                <div class="dock-divider"></div>
 
                 <div class="action-buttons">
                     <button id="btnGenerate" class="btn-primary">
@@ -69,7 +88,7 @@
             <div class="carousel-scroll-area">
                 <div id="carouselContainer" class="carousel-container">
                     <div class="empty-state">
-                        <div class="empty-icon"><i data-lucide="layers" size="48"></i></div>
+                        <div class="empty-icon"><i data-lucide="layers" style="width: 48px; height: 48px;"></i></div>
                         <h3>Propositum 1080x1350</h3>
                         <p>Ajuste sua marca no painel superior e clique em gerar.</p>
                     </div>
