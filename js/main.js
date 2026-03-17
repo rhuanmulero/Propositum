@@ -1,3 +1,4 @@
+import { AppState } from './state.js';
 import { updateColors } from './utils/colors.js';
 import { getMockData, fetchGeminiData } from './utils/api.js';
 import { renderCarousel } from './modules/render.js';
@@ -5,12 +6,117 @@ import { initEditorEvents } from './modules/editor.js';
 import { initDragAndDropEvents } from './modules/dragDrop.js';
 import { downloadCarousel } from './modules/export.js';
 
-
-// Inicializa Eventos Globales (Context Menu, Drag e etc)
+// Inicializa Eventos Globales
 initEditorEvents();
 initDragAndDropEvents();
 
-// Template Presets de Cor
+// ==========================================
+// CANVAS ENGINE: INFINITE PAN & ZOOM
+// ==========================================
+const workspace = document.getElementById('workspace');
+const canvasPlane = document.getElementById('canvasPlane');
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let isSpacePressed = false;
+
+document.body.setAttribute('data-tool', AppState.currentTool);
+
+function applyCanvasTransform() {
+    canvasPlane.style.transform = `translate(${AppState.canvasX}px, ${AppState.canvasY}px) scale(${AppState.canvasScale})`;
+    document.getElementById('zoomLevel').innerText = Math.round(AppState.canvasScale * 100) + '%';
+}
+
+// Inicializa o canvas
+applyCanvasTransform();
+
+// Gerenciamento de Ferramentas (Pointer vs Hand)
+document.querySelectorAll('.figma-toolbar .tool-btn[data-tool]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.figma-toolbar .tool-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        AppState.currentTool = btn.dataset.tool;
+        document.body.setAttribute('data-tool', AppState.currentTool);
+        
+        if (AppState.currentTool === 'hand') workspace.style.cursor = 'grab';
+        else workspace.style.cursor = 'default';
+    });
+});
+
+// Tecla Espaço para virar a "Mãozinha" temporariamente (Figma/Photoshop)
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT' && !document.activeElement.isContentEditable) {
+        e.preventDefault();
+        isSpacePressed = true;
+        workspace.style.cursor = 'grab';
+    }
+});
+window.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') {
+        isSpacePressed = false;
+        if (AppState.currentTool !== 'hand') workspace.style.cursor = 'default';
+    }
+});
+
+// Lógica de PAN (Arrastar o Canvas)
+workspace.addEventListener('mousedown', (e) => {
+    if (e.button === 1 || isSpacePressed || AppState.currentTool === 'hand') { // Botão do meio ou Hand Tool
+        e.preventDefault();
+        isPanning = true;
+        panStartX = e.clientX - AppState.canvasX;
+        panStartY = e.clientY - AppState.canvasY;
+        workspace.classList.add('panning');
+    }
+});
+
+window.addEventListener('mousemove', (e) => {
+    if (isPanning) {
+        AppState.canvasX = e.clientX - panStartX;
+        AppState.canvasY = e.clientY - panStartY;
+        applyCanvasTransform();
+    }
+});
+
+window.addEventListener('mouseup', () => {
+    if (isPanning) {
+        isPanning = false;
+        workspace.classList.remove('panning');
+    }
+});
+
+// Lógica de ZOOM (Ctrl + Scroll ou Scroll normal na Touchpad)
+workspace.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        const zoomSensitivity = 0.002;
+        const delta = -e.deltaY * zoomSensitivity;
+        let newScale = AppState.canvasScale * (1 + delta);
+        
+        // Limites de zoom (10% a 400%)
+        newScale = Math.max(0.1, Math.min(newScale, 4));
+
+        // Magia para dar Zoom em direção ao cursor do mouse
+        const rect = workspace.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Calcula o deslocamento necessário
+        AppState.canvasX = mouseX - (mouseX - AppState.canvasX) * (newScale / AppState.canvasScale);
+        AppState.canvasY = mouseY - (mouseY - AppState.canvasY) * (newScale / AppState.canvasScale);
+        
+        AppState.canvasScale = newScale;
+        applyCanvasTransform();
+    }
+}, { passive: false });
+
+// Botões de Zoom UI
+document.getElementById('btnZoomIn').addEventListener('click', () => { AppState.canvasScale = Math.min(4, AppState.canvasScale + 0.1); applyCanvasTransform(); });
+document.getElementById('btnZoomOut').addEventListener('click', () => { AppState.canvasScale = Math.max(0.1, AppState.canvasScale - 0.1); applyCanvasTransform(); });
+
+
+// ==========================================
+// RESTANTE DO CÓDIGO (Gerar, Tema, Cores)
+// ==========================================
 document.getElementById('templateSelect').addEventListener('change', (e) => {
     const val = e.target.value;
     const defaultColors = {
@@ -27,12 +133,10 @@ document.getElementById('templateSelect').addEventListener('change', (e) => {
     }
 });
 
-// Sync de Cores Manual
 document.getElementById('brandColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, e.target.value, document.getElementById('textColor').value));
 document.getElementById('bgColor').addEventListener('input', (e) => updateColors(e.target.value, document.getElementById('brandColor').value, document.getElementById('textColor').value));
 document.getElementById('textColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, document.getElementById('brandColor').value, e.target.value));
 
-// Botão Gerar
 document.getElementById('btnGenerate').addEventListener('click', async () => {
     const apiKey = document.getElementById('apiKeyInput').value.trim();
     const themeStr = document.getElementById('themeInput').value.trim();
@@ -49,12 +153,11 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
     } else {
         const aiData = await fetchGeminiData(themeStr, template, apiKey);
         if (aiData) renderCarousel(aiData, template);
-        else alert("Erro na geração. Tente outro tema ou verifique a API Key.");
+        else alert("Erro na geração. Verifique a API Key.");
     }
 
-    btn.innerHTML = 'Gerar Carrossel';
+    btn.innerHTML = 'Gerar IA';
     btn.disabled = false;
 });
 
-// Botão Baixar
 document.getElementById('btnDownload').addEventListener('click', downloadCarousel);

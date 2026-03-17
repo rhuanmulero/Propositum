@@ -1,4 +1,5 @@
 import { AppState } from '../state.js';
+import { updateSelectionBox } from './editor.js';
 
 let draggedEl = null;
 let startX = 0, startY = 0, initLeft = 0, initTop = 0, isDragging = false;
@@ -18,7 +19,7 @@ function initDragSetup(el, e) {
     const oldLeft = draggedEl.style.left; const oldTop = draggedEl.style.top;
     draggedEl.style.left = '0px'; draggedEl.style.top = '0px';
 
-    const scale = 0.4;
+    const scale = AppState.canvasScale; // Dinâmico invés do antigo 0.4 fixo
     const slideRect = currentSlide.getBoundingClientRect();
     const elRect = draggedEl.getBoundingClientRect();
 
@@ -44,7 +45,7 @@ function initDragSetup(el, e) {
         sibBounds.push({ l: sl, r: sl + sw, t: st, b: st + sh, cx: sl + sw/2, cy: st + sh/2 });
     });
 
-    existingGapsX = []; existingGapsY =[];
+    existingGapsX =[]; existingGapsY =[];
     for(let i = 0; i < sibBounds.length; i++) {
         for(let j = i+1; j < sibBounds.length; j++) {
             if(!(sibBounds[i].b < sibBounds[j].t || sibBounds[i].t > sibBounds[j].b)) {
@@ -63,7 +64,9 @@ function initDragSetup(el, e) {
 
 export function initDragAndDropEvents() {
     document.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
+        if (e.button !== 0 || AppState.currentTool !== 'pointer') return; 
+        if (e.target.closest('.resize-handle')) return; 
+
         if (e.target.closest('#btnToolbarMove')) {
             e.preventDefault();
             const elToMove = AppState.targetImageToReplace.closest('.draggable') || AppState.targetImageToReplace;
@@ -71,6 +74,7 @@ export function initDragAndDropEvents() {
             initDragSetup(elToMove, e);
             return;
         }
+        
         const draggable = e.target.closest('.draggable');
         if (!draggable) return;
         if (draggable.isContentEditable && document.activeElement === draggable) return;
@@ -83,8 +87,9 @@ export function initDragAndDropEvents() {
         if (!draggedEl) return;
         isDragging = true;
         
-        let dx = (e.clientX - startX) / 0.4;
-        let dy = (e.clientY - startY) / 0.4;
+        // Aplica o scale exato para mover perfeitamente com o mouse
+        let dx = (e.clientX - startX) / AppState.canvasScale;
+        let dy = (e.clientY - startY) / AppState.canvasScale;
         let rawLeft = initLeft + dx; let rawTop = initTop + dy;
 
         let curL = baseLeft + rawLeft; let curR = baseRight + rawLeft; let curCx = baseCx + rawLeft;
@@ -96,8 +101,7 @@ export function initDragAndDropEvents() {
         if(Math.abs(curCx - 540) < bestDistX) { bestDistX = Math.abs(curCx - 540); snapXVal = rawLeft + (540 - curCx); guideX = 540; }
         if(Math.abs(curCy - 675) < bestDistY) { bestDistY = Math.abs(curCy - 675); snapYVal = rawTop + (675 - curCy); guideY = 675; }
 
-        sibBounds.forEach(sib => {
-            [ [curL, sib.l], [curL, sib.r], [curCx, sib.cx], [curR, sib.l], [curR, sib.r] ].forEach(pair => {
+        sibBounds.forEach(sib => {[ [curL, sib.l],[curL, sib.r], [curCx, sib.cx],[curR, sib.l],[curR, sib.r] ].forEach(pair => {
                 let diff = Math.abs(pair[0] - pair[1]);
                 if(diff < bestDistX) { bestDistX = diff; snapXVal = rawLeft + (pair[1] - pair[0]); guideX = pair[1]; }
             });
@@ -107,35 +111,12 @@ export function initDragAndDropEvents() {
             });
         });
 
-        sibBounds.forEach(sib => {
-            let overlapY = !(curB < sib.t || curT > sib.b);
-            if(overlapY) {
-                let gap = curCx < sib.cx ? sib.l - curR : curL - sib.r;
-                existingGapsX.forEach(g => {
-                    if(Math.abs(gap - g) < bestDistX) {
-                        bestDistX = Math.abs(gap - g);
-                        let target = curCx < sib.cx ? (sib.l - g) - baseRight : (sib.r + g) - baseLeft;
-                        snapXVal = target; guideX = curCx; 
-                    }
-                });
-            }
-            let overlapX = !(curR < sib.l || curL > sib.r);
-            if(overlapX) {
-                let gap = curCy < sib.cy ? sib.t - curB : curT - sib.b;
-                existingGapsY.forEach(g => {
-                    if(Math.abs(gap - g) < bestDistY) {
-                        bestDistY = Math.abs(gap - g);
-                        let target = curCy < sib.cy ? (sib.t - g) - baseBottom : (sib.b + g) - baseTop;
-                        snapYVal = target; guideY = curCy;
-                    }
-                });
-            }
-        });
-
         draggedEl.style.left = `${snapXVal}px`;
         draggedEl.style.top = `${snapYVal}px`;
         draggedEl.style.zIndex = '1000'; 
         
+        updateSelectionBox();
+
         if (currentSlide) {
             const gV = currentSlide.querySelector('.guide-v');
             const gH = currentSlide.querySelector('.guide-h');

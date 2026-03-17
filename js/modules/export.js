@@ -1,3 +1,5 @@
+import { deselectElement } from './editor.js';
+
 export async function downloadCarousel() {
     const btn = document.getElementById('btnDownload');
     const originalContent = btn.innerHTML;
@@ -10,6 +12,9 @@ export async function downloadCarousel() {
     document.querySelectorAll('.guide-line').forEach(el => el.style.display = 'none');
     if (document.activeElement) document.activeElement.blur();
     window.getSelection().removeAllRanges(); 
+
+    // Oculte a bounding box antes de renderizar a imagem:
+    deselectElement();
 
     const slides = document.querySelectorAll('.slide');
     for (let i = 0; i < slides.length; i++) {

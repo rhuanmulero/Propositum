@@ -14,7 +14,8 @@ const getIcon = (idx) => {
 
 function buildStructureA(slide) {
     let bgHtml = ''; let contentHtml = '';
-    const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
+    const websiteEl = document.getElementById('websiteInput');
+    const siteUrl = websiteEl && websiteEl.value.trim() ? websiteEl.value.trim() : 'seusite.com.br';
 
     if (slide.type === 'cover') {
         bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
@@ -48,7 +49,8 @@ function buildStructureA(slide) {
 
 function buildStructureB(slide) {
     let bgHtml = ''; let contentHtml = '';
-    const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
+    const websiteEl = document.getElementById('websiteInput');
+    const siteUrl = websiteEl && websiteEl.value.trim() ? websiteEl.value.trim() : 'seusite.com.br';
 
     if (slide.type === 'cover') {
         bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;

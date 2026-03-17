@@ -3,19 +3,28 @@
 .guide-v { width: 1.5px; height: 100%; top: 0; transform: translateX(-50%); }
 .guide-h { width: 100%; height: 1.5px; left: 0; transform: translateY(-50%); }
 
-.draggable { position: relative; cursor: grab; }
-.draggable:active { cursor: grabbing; }
-
-[contenteditable="true"] { outline: none; border-radius: 8px; transition: outline 0.2s, background 0.2s; }
+.draggable { position: relative; cursor: default; }
+/* Se hover ativo em pointer, vira grab */
+body[data-tool="pointer"] .draggable { cursor: grab; }
+body[data-tool="pointer"] .draggable:active { cursor: grabbing; }[contenteditable="true"] { outline: none; border-radius: 8px; transition: outline 0.2s, background 0.2s; }
 [contenteditable="true"]:hover { outline: 2px dashed rgba(var(--text-rgb), 0.4); cursor: text; background: rgba(var(--text-rgb), 0.05); }[contenteditable="true"]:focus { outline: 2px solid var(--brand-color); background: rgba(0,0,0,0.3); cursor: text; }
 
-.editable-img { transition: filter 0.3s, outline 0.3s; cursor: pointer; -webkit-user-drag: none; }
-.editable-img:hover { outline: 4px dashed var(--brand-color); outline-offset: -4px; filter: brightness(0.6); }
+.editable-img { transition: filter 0.3s, outline 0.3s; -webkit-user-drag: none; }
+body[data-tool="pointer"] .editable-img:hover { outline: 4px dashed var(--brand-color); outline-offset: -4px; filter: brightness(0.6); }
 
-/* BASE DOS SLIDES */
-.slide-wrapper { width: 432px; height: 540px; flex-shrink: 0; position: relative; border-right: 2px dashed rgba(255,255,255,0.25); }
-.slide-wrapper:last-child { border-right: none; }
-.slide { width: 1080px; height: 1350px; transform: scale(0.4); transform-origin: top left; position: relative; overflow: hidden; display: flex; flex-direction: column; background-color: var(--bg-color); color: var(--text-color); }
+/* SELECTION BOX (FIGMA LIKE) */
+.selection-box { position: absolute; border: 2px solid #0d99ff; pointer-events: none; z-index: 9999; }
+.resize-handle { position: absolute; width: 12px; height: 12px; background: #fff; border: 2px solid #0d99ff; pointer-events: auto; }
+.resize-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
+.resize-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
+.resize-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
+.resize-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+
+/* BASE DOS SLIDES - NÂO HÁ MAIS SCALE(0.4) AQUI. TAMANHO REAL 1:1 */
+.slide-wrapper { position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 4px; transition: outline 0.2s; }
+.slide-wrapper.active { outline: 6px solid #0d99ff; outline-offset: 10px; z-index: 10; }
+
+.slide { width: 1080px; height: 1350px; position: relative; overflow: hidden; display: flex; flex-direction: column; background-color: var(--bg-color); color: var(--text-color); }
 
 .slide-bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; pointer-events: auto;}
 .slide-gradient { position: absolute; inset: 0; z-index: 2; pointer-events: none;}
