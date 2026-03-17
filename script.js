@@ -20,7 +20,6 @@ function updateColors(bg, brand, text) {
     document.documentElement.style.setProperty('--text-rgb', hexToRgb(text));
 }
 
-// Escuta Mudanças de Template
 document.getElementById('templateSelect').addEventListener('change', (e) => {
     const val = e.target.value;
     const defaultColors = {
@@ -51,13 +50,12 @@ document.getElementById('logoInput').addEventListener('change', (e) => {
         const btn = document.getElementById('btnLogoUpload');
         btn.innerHTML = '<i data-lucide="check" style="color:var(--brand-color);"></i>';
         lucide.createIcons();
-        document.querySelectorAll('.brand-logo-container').forEach(container => container.innerHTML = `<img src="${customLogoUrl}" class="custom-logo-img">`);
+        document.querySelectorAll('.brand-logo-container').forEach(container => container.innerHTML = `<img src="${customLogoUrl}" class="custom-logo-img draggable">`);
     };
     reader.readAsDataURL(file);
 });
 
-
-// --- LÓGICA DO MENU DE CONTEXTO PARA IMAGENS ---
+// LÓGICA DO MENU DE CONTEXTO E CROP
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('editable-img')) {
         targetImageToReplace = e.target;
@@ -84,13 +82,8 @@ document.getElementById('slideImageInput').addEventListener('change', (e) => {
         document.getElementById('cropModal').style.display = 'flex';
         const cropTarget = document.getElementById('cropTarget');
         cropTarget.src = ev.target.result;
-        
         if (cropper) cropper.destroy();
-        cropper = new Cropper(cropTarget, {
-            viewMode: 1,
-            autoCropArea: 1,
-            background: false
-        });
+        cropper = new Cropper(cropTarget, { viewMode: 1, autoCropArea: 1, background: false });
     };
     reader.readAsDataURL(file);
     e.target.value = ''; 
@@ -110,16 +103,17 @@ document.getElementById('btnApplyCrop').addEventListener('click', () => {
     }
 });
 
-// --- LÓGICA CANVA: ARRASTAR, SOLTAR E ALINHAMENTO COM OUTROS ELEMENTOS ---
+// --- MOTOR DE ALINHAMENTO ESPACIAL E DISTÂNCIAS (SMART GUIDES) ---
 let draggedEl = null;
 let startX = 0, startY = 0;
 let initLeft = 0, initTop = 0;
 let isDragging = false;
 
-// Variáveis de escopo para as posições reais na prancheta
-let baseLeft = 0, baseRight = 0, baseTop = 0, baseBottom = 0, baseCenterX = 0, baseCenterY = 0;
+let baseLeft = 0, baseRight = 0, baseTop = 0, baseBottom = 0, baseCx = 0, baseCy = 0;
+let sibBounds = [];
+let existingGapsX = [];
+let existingGapsY =[];
 let currentSlide = null;
-let snapTargets =[]; // Irá armazenar todos os eixos X e Y de outros elementos
 
 function initDragSetup(el, e) {
     draggedEl = el;
@@ -131,61 +125,68 @@ function initDragSetup(el, e) {
     initTop = parseFloat(draggedEl.style.top) || 0;
     isDragging = false;
 
+    // Normalização 1:1 do elemento arrastado baseada na prancheta 1080x1350
     const oldLeft = draggedEl.style.left;
     const oldTop = draggedEl.style.top;
     draggedEl.style.left = '0px';
     draggedEl.style.top = '0px';
 
-    const scale = 0.4; // A escala aplicada no CSS (.slide)
+    const scale = 0.4;
     const slideRect = currentSlide.getBoundingClientRect();
     const elRect = draggedEl.getBoundingClientRect();
 
     baseLeft = (elRect.left - slideRect.left) / scale;
     baseTop = (elRect.top - slideRect.top) / scale;
-    const elWidth = elRect.width / scale;
-    const elHeight = elRect.height / scale;
+    const elW = elRect.width / scale;
+    const elH = elRect.height / scale;
 
-    baseRight = baseLeft + elWidth;
-    baseBottom = baseTop + elHeight;
-    baseCenterX = baseLeft + elWidth / 2;
-    baseCenterY = baseTop + elHeight / 2;
+    baseRight = baseLeft + elW;
+    baseBottom = baseTop + elH;
+    baseCx = baseLeft + elW / 2;
+    baseCy = baseTop + elH / 2;
 
     draggedEl.style.left = oldLeft;
     draggedEl.style.top = oldTop;
 
-    // Constrói o radar magnético com todos os outros elementos do slide
-    snapTargets =[];
+    // Mapeamento Magnético de todos os outros elementos do Slide
+    sibBounds =[];
+    const siblings = Array.from(currentSlide.querySelectorAll('.draggable')).filter(n => n !== draggedEl);
     
-    // 1. Limites do Slide Inteiro (Bordas e Centro)
-    snapTargets.push({
-        x:[0, 540, 1080],
-        y: [0, 675, 1350]
-    });
-
-    // 2. Limites dos outros elementos na tela
-    const siblings = currentSlide.querySelectorAll('.draggable');
-    siblings.forEach(sibling => {
-        if (sibling === draggedEl) return;
-        const sRect = sibling.getBoundingClientRect();
-        
-        // Ignora elementos vazios ou escondidos
-        if (sRect.width === 0 || sRect.height === 0) return;
-        
-        const sLeft = (sRect.left - slideRect.left) / scale;
-        const sTop = (sRect.top - slideRect.top) / scale;
-        const sWidth = sRect.width / scale;
-        const sHeight = sRect.height / scale;
-
-        snapTargets.push({
-            x: [sLeft, sLeft + sWidth / 2, sLeft + sWidth],
-            y: [sTop, sTop + sHeight / 2, sTop + sHeight]
+    siblings.forEach(sib => {
+        const sRect = sib.getBoundingClientRect();
+        if (sRect.width === 0) return;
+        const sl = (sRect.left - slideRect.left) / scale;
+        const st = (sRect.top - slideRect.top) / scale;
+        const sw = sRect.width / scale;
+        const sh = sRect.height / scale;
+        sibBounds.push({
+            l: sl, r: sl + sw, t: st, b: st + sh, cx: sl + sw/2, cy: st + sh/2
         });
     });
+
+    // Mapeia todas as distâncias (gaps) que já existem na tela para o "Equidistant Snap"
+    existingGapsX =[];
+    existingGapsY =[];
+    for(let i = 0; i < sibBounds.length; i++) {
+        for(let j = i+1; j < sibBounds.length; j++) {
+            // Se cruzam no eixo Y, há um gap X real entre eles
+            if(!(sibBounds[i].b < sibBounds[j].t || sibBounds[i].t > sibBounds[j].b)) {
+                let leftNode = sibBounds[i].cx < sibBounds[j].cx ? sibBounds[i] : sibBounds[j];
+                let rightNode = sibBounds[i].cx < sibBounds[j].cx ? sibBounds[j] : sibBounds[i];
+                existingGapsX.push(rightNode.l - leftNode.r);
+            }
+            // Se cruzam no eixo X, há um gap Y real
+            if(!(sibBounds[i].r < sibBounds[j].l || sibBounds[i].l > sibBounds[j].r)) {
+                let topNode = sibBounds[i].cy < sibBounds[j].cy ? sibBounds[i] : sibBounds[j];
+                let botNode = sibBounds[i].cy < sibBounds[j].cy ? sibBounds[j] : sibBounds[i];
+                existingGapsY.push(botNode.t - topNode.b);
+            }
+        }
+    }
 }
 
 document.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return;
-
     if (e.target.closest('#btnToolbarMove')) {
         e.preventDefault();
         const elToMove = targetImageToReplace.closest('.draggable') || targetImageToReplace;
@@ -193,7 +194,6 @@ document.addEventListener('mousedown', (e) => {
         initDragSetup(elToMove, e);
         return;
     }
-
     const draggable = e.target.closest('.draggable');
     if (!draggable) return;
     if (draggable.isContentEditable && document.activeElement === draggable) return;
@@ -208,60 +208,79 @@ document.addEventListener('mousemove', (e) => {
     
     let dx = (e.clientX - startX) / 0.4;
     let dy = (e.clientY - startY) / 0.4;
-
     let rawLeft = initLeft + dx;
     let rawTop = initTop + dy;
 
-    // Consegue a posição atual exata das bordas de quem está sendo arrastado
-    let currentLeft = baseLeft + rawLeft;
-    let currentRight = baseRight + rawLeft;
-    let currentCenterX = baseCenterX + rawLeft;
+    let curL = baseLeft + rawLeft;
+    let curR = baseRight + rawLeft;
+    let curCx = baseCx + rawLeft;
+    let curT = baseTop + rawTop;
+    let curB = baseBottom + rawTop;
+    let curCy = baseCy + rawTop;
 
-    let currentTop = baseTop + rawTop;
-    let currentBottom = baseBottom + rawTop;
-    let currentCenterY = baseCenterY + rawTop;
+    let bestDistX = 15; // 15px de ímã de força
+    let snapXVal = rawLeft;
+    let guideX = null;
 
-    let snappedX = false;
-    let snappedY = false;
-    let guideX = 0;
-    let guideY = 0;
-    const snapTolerance = 15; // Quão forte é o "Ímã" 
+    let bestDistY = 15;
+    let snapYVal = rawTop;
+    let guideY = null;
 
-    let minDiffX = snapTolerance;
-    let minDiffY = snapTolerance;
+    // 1. Centro absoluto do Slide
+    if(Math.abs(curCx - 540) < bestDistX) { bestDistX = Math.abs(curCx - 540); snapXVal = rawLeft + (540 - curCx); guideX = 540; }
+    if(Math.abs(curCy - 675) < bestDistY) { bestDistY = Math.abs(curCy - 675); snapYVal = rawTop + (675 - curCy); guideY = 675; }
 
-    // Varre todos os outros elementos para ver se bateu com alguma margem
-    snapTargets.forEach(target => {
-        target.x.forEach(tx => {
-            if (Math.abs(currentLeft - tx) < minDiffX) { minDiffX = Math.abs(currentLeft - tx); rawLeft = tx - baseLeft; snappedX = true; guideX = tx; }
-            if (Math.abs(currentCenterX - tx) < minDiffX) { minDiffX = Math.abs(currentCenterX - tx); rawLeft = tx - baseCenterX; snappedX = true; guideX = tx; }
-            if (Math.abs(currentRight - tx) < minDiffX) { minDiffX = Math.abs(currentRight - tx); rawLeft = tx - baseRight; snappedX = true; guideX = tx; }
+    // 2. Alinhamento com as bordas e centros dos outros cartões/textos
+    sibBounds.forEach(sib => {
+        // Eixo X (Esquerda, Centro, Direita)
+        [ [curL, sib.l], [curL, sib.r], [curCx, sib.cx], [curR, sib.l], [curR, sib.r] ].forEach(pair => {
+            let diff = Math.abs(pair[0] - pair[1]);
+            if(diff < bestDistX) { bestDistX = diff; snapXVal = rawLeft + (pair[1] - pair[0]); guideX = pair[1]; }
         });
-
-        target.y.forEach(ty => {
-            if (Math.abs(currentTop - ty) < minDiffY) { minDiffY = Math.abs(currentTop - ty); rawTop = ty - baseTop; snappedY = true; guideY = ty; }
-            if (Math.abs(currentCenterY - ty) < minDiffY) { minDiffY = Math.abs(currentCenterY - ty); rawTop = ty - baseCenterY; snappedY = true; guideY = ty; }
-            if (Math.abs(currentBottom - ty) < minDiffY) { minDiffY = Math.abs(currentBottom - ty); rawTop = ty - baseBottom; snappedY = true; guideY = ty; }
+        // Eixo Y (Topo, Meio, Base)
+        [ [curT, sib.t],[curT, sib.b], [curCy, sib.cy], [curB, sib.t],[curB, sib.b] ].forEach(pair => {
+            let diff = Math.abs(pair[0] - pair[1]);
+            if(diff < bestDistY) { bestDistY = diff; snapYVal = rawTop + (pair[1] - pair[0]); guideY = pair[1]; }
         });
     });
 
-    draggedEl.style.left = `${rawLeft}px`;
-    draggedEl.style.top = `${rawTop}px`;
+    // 3. Alinhamento de Distância Equidistante
+    sibBounds.forEach(sib => {
+        let overlapY = !(curB < sib.t || curT > sib.b);
+        if(overlapY) {
+            let gap = curCx < sib.cx ? sib.l - curR : curL - sib.r;
+            existingGapsX.forEach(g => {
+                if(Math.abs(gap - g) < bestDistX) {
+                    bestDistX = Math.abs(gap - g);
+                    let target = curCx < sib.cx ? (sib.l - g) - baseRight : (sib.r + g) - baseLeft;
+                    snapXVal = target; guideX = curCx; // Só indica que travou mostrando a guia no meio dele
+                }
+            });
+        }
+        let overlapX = !(curR < sib.l || curL > sib.r);
+        if(overlapX) {
+            let gap = curCy < sib.cy ? sib.t - curB : curT - sib.b;
+            existingGapsY.forEach(g => {
+                if(Math.abs(gap - g) < bestDistY) {
+                    bestDistY = Math.abs(gap - g);
+                    let target = curCy < sib.cy ? (sib.t - g) - baseBottom : (sib.b + g) - baseTop;
+                    snapYVal = target; guideY = curCy;
+                }
+            });
+        }
+    });
+
+    // Aplica o travamento final no elemento
+    draggedEl.style.left = `${snapXVal}px`;
+    draggedEl.style.top = `${snapYVal}px`;
     draggedEl.style.zIndex = '1000'; 
     
-    // Exibe as linhas visuais dinamicamente
+    // Atualiza o display das linhas guias
     if (currentSlide) {
-        const guideV = currentSlide.querySelector('.guide-v');
-        const guideH = currentSlide.querySelector('.guide-h');
-        
-        if(guideV) { 
-            guideV.style.display = snappedX ? 'block' : 'none'; 
-            guideV.style.left = `${guideX}px`; 
-        }
-        if(guideH) { 
-            guideH.style.display = snappedY ? 'block' : 'none'; 
-            guideH.style.top = `${guideY}px`; 
-        }
+        const gV = currentSlide.querySelector('.guide-v');
+        const gH = currentSlide.querySelector('.guide-h');
+        if(gV) { gV.style.display = guideX !== null ? 'block' : 'none'; gV.style.left = `${guideX}px`; }
+        if(gH) { gH.style.display = guideY !== null ? 'block' : 'none'; gH.style.top = `${guideY}px`; }
     }
 
     window.getSelection().removeAllRanges(); 
@@ -274,7 +293,6 @@ document.addEventListener('mouseup', () => {
         draggedEl = null;
         isDragging = false;
     }
-    
     document.querySelectorAll('.guide-line').forEach(el => el.style.display = 'none');
     currentSlide = null;
 });
@@ -405,7 +423,7 @@ function renderCarousel(data, template) {
             `;
         }
 
-        // Adiciona as Linhas Guia Invisíveis Dinâmicas (Em toda a tela do slide)
+        // GUIAS DE ALINHAMENTO DO SLIDE (Ficam prontas na DOM para serem ativadas pelo motor magnético)
         const guidesHtml = `
             <div class="guide-line guide-v"></div>
             <div class="guide-line guide-h"></div>
@@ -469,7 +487,7 @@ async function fetchGeminiData(theme, template, apiKey) {
     const promptCorp = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}] // MÁX 3 ITENS},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
 
     try {
-        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents:[{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });
+        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });
         if (!response.ok) throw new Error("Chave inválida");
         const data = await response.json();
         return JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim());
