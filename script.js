@@ -1,5 +1,6 @@
 let customLogoUrl = null;
 let targetImageToReplace = null; 
+let cropper = null;
 
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -19,7 +20,7 @@ function updateColors(bg, brand, text) {
     document.documentElement.style.setProperty('--text-rgb', hexToRgb(text));
 }
 
-// Escuta Mudanças de Template para Auto-Ajustar as 3 Cores
+// Escuta Mudanças de Template
 document.getElementById('templateSelect').addEventListener('change', (e) => {
     const val = e.target.value;
     const defaultColors = {
@@ -36,7 +37,6 @@ document.getElementById('templateSelect').addEventListener('change', (e) => {
     }
 });
 
-// Atualizações Manuais de Cor
 document.getElementById('brandColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, e.target.value, document.getElementById('textColor').value));
 document.getElementById('bgColor').addEventListener('input', (e) => updateColors(e.target.value, document.getElementById('brandColor').value, document.getElementById('textColor').value));
 document.getElementById('textColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, document.getElementById('brandColor').value, e.target.value));
@@ -56,6 +56,7 @@ document.getElementById('logoInput').addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
+// Lógica de Edição de Imagem com CROP
 document.getElementById('carouselContainer').addEventListener('click', (e) => {
     if (e.target.classList.contains('editable-img')) {
         targetImageToReplace = e.target;
@@ -68,14 +69,134 @@ document.getElementById('slideImageInput').addEventListener('change', (e) => {
     if(!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
-        if (targetImageToReplace) {
-            targetImageToReplace.src = ev.target.result;
-            targetImageToReplace = null;
-        }
+        document.getElementById('cropModal').style.display = 'flex';
+        const cropTarget = document.getElementById('cropTarget');
+        cropTarget.src = ev.target.result;
+        
+        if (cropper) cropper.destroy();
+        cropper = new Cropper(cropTarget, {
+            viewMode: 1,
+            autoCropArea: 1,
+            background: false
+        });
     };
     reader.readAsDataURL(file);
     e.target.value = ''; 
 });
+
+document.getElementById('btnCancelCrop').addEventListener('click', () => {
+    document.getElementById('cropModal').style.display = 'none';
+    if(cropper) { cropper.destroy(); cropper = null; }
+});
+
+document.getElementById('btnApplyCrop').addEventListener('click', () => {
+    if (cropper && targetImageToReplace) {
+        const canvas = cropper.getCroppedCanvas({ maxWidth: 1080, maxHeight: 1350 });
+        targetImageToReplace.src = canvas.toDataURL('image/jpeg', 0.9);
+        document.getElementById('cropModal').style.display = 'none';
+        cropper.destroy(); cropper = null;
+    }
+});
+
+// --- LÓGICA DE ARRASTAR, SOLTAR E GUIAS MAGNÉTICAS (CANVA STYLE) ---
+let draggedEl = null;
+let startX = 0, startY = 0;
+let initLeft = 0, initTop = 0;
+let isDragging = false;
+let baseCenterX = 0, baseCenterY = 0;
+let currentSlide = null;
+
+document.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return; // Apenas clique esquerdo
+    const draggable = e.target.closest('.draggable');
+    if (!draggable) return;
+
+    // Se estiver focando para editar texto, permite o clique original sem arrastar
+    if (draggable.isContentEditable && document.activeElement === draggable) return;
+
+    draggedEl = draggable;
+    currentSlide = draggedEl.closest('.slide');
+    startX = e.clientX;
+    startY = e.clientY;
+    initLeft = parseFloat(draggedEl.style.left) || 0;
+    initTop = parseFloat(draggedEl.style.top) || 0;
+    isDragging = false;
+
+    // Extrai a posição neutra do elemento baseada na prancheta para conseguir o snap magnético
+    const oldLeft = draggedEl.style.left;
+    const oldTop = draggedEl.style.top;
+    draggedEl.style.left = '0px';
+    draggedEl.style.top = '0px';
+
+    const slideRect = currentSlide.getBoundingClientRect();
+    const elRect = draggedEl.getBoundingClientRect();
+
+    baseCenterX = ((elRect.left - slideRect.left) + elRect.width / 2) / 0.4;
+    baseCenterY = ((elRect.top - slideRect.top) + elRect.height / 2) / 0.4;
+
+    draggedEl.style.left = oldLeft;
+    draggedEl.style.top = oldTop;
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!draggedEl) return;
+    isDragging = true;
+    
+    let dx = (e.clientX - startX) / 0.4;
+    let dy = (e.clientY - startY) / 0.4;
+
+    let rawLeft = initLeft + dx;
+    let rawTop = initTop + dy;
+
+    let currentCenterX = baseCenterX + rawLeft;
+    let currentCenterY = baseCenterY + rawTop;
+
+    let snappedX = false;
+    let snappedY = false;
+    const snapTolerance = 25; // Força magnética (em pixels da tela/canva)
+
+    // Snap Vertical (X)
+    if (Math.abs(currentCenterX - 540) < snapTolerance) {
+        rawLeft = 540 - baseCenterX;
+        snappedX = true;
+    }
+
+    // Snap Horizontal (Y)
+    if (Math.abs(currentCenterY - 675) < snapTolerance) {
+        rawTop = 675 - baseCenterY;
+        snappedY = true;
+    }
+
+    draggedEl.style.left = `${rawLeft}px`;
+    draggedEl.style.top = `${rawTop}px`;
+    draggedEl.style.zIndex = '1000'; // Traz para frente ao arrastar
+    
+    // Liga ou desliga as linhas vermelhas visuais se bater com o centro do slide
+    if (currentSlide) {
+        const guideV = currentSlide.querySelector('.guide-v');
+        const guideH = currentSlide.querySelector('.guide-h');
+        if(guideV) guideV.style.display = snappedX ? 'block' : 'none';
+        if(guideH) guideH.style.display = snappedY ? 'block' : 'none';
+    }
+
+    window.getSelection().removeAllRanges(); // Evita marcar/selecionar texto sem querer
+});
+
+document.addEventListener('mouseup', () => {
+    if (draggedEl) {
+        if (!isDragging && draggedEl.isContentEditable) {
+            draggedEl.focus(); 
+        }
+        draggedEl.style.zIndex = '';
+        draggedEl = null;
+        isDragging = false;
+    }
+    
+    // Esconde as guias sempre que finalizar qualquer arraste
+    document.querySelectorAll('.guide-line').forEach(el => el.style.display = 'none');
+    currentSlide = null;
+});
+
 
 const imgBank =[
     "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1080&auto=format&fit=crop",
@@ -96,31 +217,31 @@ function buildStructureA(slide) {
     const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
 
     if (slide.type === 'cover') {
-        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar" crossorigin="anonymous"><div class="slide-gradient"></div>`;
-        contentHtml = `<div class="tag" contenteditable="true" spellcheck="false">${slide.tag}</div>
-                       <h1 contenteditable="true" spellcheck="false">${slide.title}</h1>`;
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar fundo" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        contentHtml = `<div class="tag draggable" contenteditable="true" spellcheck="false">${slide.tag}</div>
+                       <h1 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h1>`;
     } else if (slide.type === 'features') {
         const cards = slide.items.slice(0, 3).map((i, idx) => {
-            return `<div class="feature-card">
+            return `<div class="feature-card draggable">
                 <div class="icon-box">${getIcon(idx)}</div>
                 <div class="feature-text"><h3 contenteditable="true" spellcheck="false">${i.title}:</h3> <p contenteditable="true" spellcheck="false">${i.desc}</p></div>
             </div>`;
         }).join('');
-        contentHtml = `<div class="top-img-container"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
-        <h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
-        <p class="sub" contenteditable="true" spellcheck="false">${slide.subtitle}</p>${cards}`;
+        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        <h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="sub draggable" contenteditable="true" spellcheck="false">${slide.subtitle}</p>${cards}`;
     } else if (slide.type === 'process') {
-        const steps = slide.items.map((i, idx) => `<div class="step-card"><div class="step-num">${idx+1}</div><h3 contenteditable="true" spellcheck="false">${i.title}</h3><p contenteditable="true" spellcheck="false">${i.desc}</p></div>`).join('');
-        contentHtml = `<h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
-        <p class="sub" contenteditable="true" spellcheck="false">${slide.subtitle}</p>
+        const steps = slide.items.map((i, idx) => `<div class="step-card draggable"><div class="step-num">${idx+1}</div><h3 contenteditable="true" spellcheck="false">${i.title}</h3><p contenteditable="true" spellcheck="false">${i.desc}</p></div>`).join('');
+        contentHtml = `<h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="sub draggable" contenteditable="true" spellcheck="false">${slide.subtitle}</p>
         <div class="grid">${steps}</div>
-        ${slide.footerText ? `<p class="process-footer" contenteditable="true" spellcheck="false">${slide.footerText}</p>` : ''}`;
+        ${slide.footerText ? `<p class="process-footer draggable" contenteditable="true" spellcheck="false">${slide.footerText}</p>` : ''}`;
     } else if (slide.type === 'cta') {
-        contentHtml = `<div class="top-img-container"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
-        <h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
-        <p class="desc" contenteditable="true" spellcheck="false">${slide.desc}</p>
-        <button class="btn-cta" contenteditable="true" spellcheck="false">${slide.button}</button>
-        <p class="website-link" contenteditable="true" spellcheck="false">${siteUrl}</p>`;
+        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        <h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="desc draggable" contenteditable="true" spellcheck="false">${slide.desc}</p>
+        <button class="btn-cta draggable" contenteditable="true" spellcheck="false">${slide.button}</button>
+        <p class="website-link draggable" contenteditable="true" spellcheck="false">${siteUrl}</p>`;
     }
     return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
 }
@@ -131,13 +252,13 @@ function buildStructureB(slide) {
     const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
 
     if (slide.type === 'cover') {
-        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar" crossorigin="anonymous"><div class="slide-gradient"></div>`;
-        contentHtml = `<div class="tag" contenteditable="true" spellcheck="false">${slide.tag}</div>
-                       <h1 contenteditable="true" spellcheck="false">${slide.title}</h1>`;
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar fundo" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        contentHtml = `<div class="tag draggable" contenteditable="true" spellcheck="false">${slide.tag}</div>
+                       <h1 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h1>`;
     } else if (slide.type === 'news') {
-        const bullets = slide.bullets.map(b => `<li contenteditable="true" spellcheck="false">${b}</li>`).join('');
+        const bullets = slide.bullets.map(b => `<li class="draggable" contenteditable="true" spellcheck="false">${b}</li>`).join('');
         contentHtml = `
-            <div class="browser">
+            <div class="browser draggable">
                 <div class="browser-header">
                     <span><i data-lucide="search" style="width:16px;"></i> Buscar</span>
                     <span class="brand" contenteditable="true" spellcheck="false">Valor <span>Dino</span></span>
@@ -146,17 +267,17 @@ function buildStructureB(slide) {
                 <div class="headline" contenteditable="true" spellcheck="false">${slide.newsHeadline}</div>
                 <div class="subheadline" contenteditable="true" spellcheck="false">${slide.newsSub}</div>
             </div>
-            <h2 contenteditable="true" spellcheck="false">${slide.title}</h2><ul class="news-bullets">${bullets}</ul>
+            <h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2><ul class="news-bullets">${bullets}</ul>
         `;
     } else if (slide.type === 'features') {
-        const cards = slide.items.slice(0, 3).map(i => `<div class="feature-card"><h3 contenteditable="true" spellcheck="false">${i.title}:</h3> <p contenteditable="true" spellcheck="false">${i.desc}</p></div>`).join('');
-        contentHtml = `<h2 contenteditable="true" spellcheck="false">${slide.title}</h2><div class="features-list">${cards}</div>`;
+        const cards = slide.items.slice(0, 3).map(i => `<div class="feature-card draggable"><h3 contenteditable="true" spellcheck="false">${i.title}:</h3> <p contenteditable="true" spellcheck="false">${i.desc}</p></div>`).join('');
+        contentHtml = `<h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2><div class="features-list">${cards}</div>`;
     } else if (slide.type === 'cta') {
-        contentHtml = `<div class="top-img-container"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
-        <h2 contenteditable="true" spellcheck="false">${slide.title}</h2>
-        <p class="desc" contenteditable="true" spellcheck="false">${slide.desc}</p>
-        <button class="btn-cta" contenteditable="true" spellcheck="false">${slide.button}</button>
-        <p class="website-link" contenteditable="true" spellcheck="false" style="margin-top: 30px; font-size: 26px;">${siteUrl}</p>`;
+        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        <h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2>
+        <p class="desc draggable" contenteditable="true" spellcheck="false">${slide.desc}</p>
+        <button class="btn-cta draggable" contenteditable="true" spellcheck="false">${slide.button}</button>
+        <p class="website-link draggable" contenteditable="true" spellcheck="false" style="margin-top: 30px; font-size: 26px;">${siteUrl}</p>`;
     }
     return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
 }
@@ -182,27 +303,33 @@ function renderCarousel(data, template) {
 
         let slideHTML = isStructureA ? buildStructureA(slide) : buildStructureB(slide);
         
-        const logoContent = customLogoUrl ? `<img src="${customLogoUrl}" class="custom-logo-img">` : `<span class="default-logo-text" contenteditable="true" spellcheck="false">Sua Marca</span>`;
+        const logoContent = customLogoUrl ? `<img src="${customLogoUrl}" class="custom-logo-img draggable">` : `<span class="default-logo-text draggable" contenteditable="true" spellcheck="false">Sua Marca</span>`;
 
         let footerHtml = '';
         if (isStructureA) {
             footerHtml = `
                 <div class="slide-footer footer-tech">
                     <div class="brand-logo-container">${logoContent}</div>
-                    ${!isLast ? `<div class="swipe-btn">ARRASTA PARA O LADO &gt;</div>` : `<div></div>`}
+                    ${!isLast ? `<div class="swipe-btn draggable">ARRASTA PARA O LADO &gt;</div>` : `<div></div>`}
                 </div>
             `;
         } else {
             footerHtml = `
                 <div class="slide-footer footer-corp">
-                    ${!isLast ? `<div class="swipe-btn">ARRASTE PARA O LADO &gt;</div>` : ''}
+                    ${!isLast ? `<div class="swipe-btn draggable">ARRASTE PARA O LADO &gt;</div>` : ''}
                     <div class="brand-logo-container">${logoContent}</div>
-                    ${isLast ? `<div class="source-link" contenteditable="true" spellcheck="false">Fonte da notícia: https://noticia.com.br</div>` : ''}
+                    ${isLast ? `<div class="source-link draggable" contenteditable="true" spellcheck="false">Fonte da notícia: https://noticia.com.br</div>` : ''}
                 </div>
             `;
         }
 
-        slideDiv.innerHTML = slideHTML + footerHtml;
+        // Adiciona as Linhas Guia da Estrutura Invisíveis na Árvore HTML
+        const guidesHtml = `
+            <div class="guide-line guide-v"></div>
+            <div class="guide-line guide-h"></div>
+        `;
+
+        slideDiv.innerHTML = slideHTML + footerHtml + guidesHtml;
         wrapper.appendChild(slideDiv);
         container.appendChild(wrapper);
     });
@@ -300,7 +427,10 @@ document.getElementById('btnDownload').addEventListener('click', async () => {
     btn.disabled = true;
     lucide.createIcons();
 
+    // Desliga qualquer guia ou foco ativo na tela
+    document.querySelectorAll('.guide-line').forEach(el => el.style.display = 'none');
     if (document.activeElement) document.activeElement.blur();
+    window.getSelection().removeAllRanges(); 
 
     const slides = document.querySelectorAll('.slide');
     for (let i = 0; i < slides.length; i++) {
