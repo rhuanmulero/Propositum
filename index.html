@@ -3,66 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Carousel Studio | White Label</title>
+    <title>Propositum | Studio</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
-    <!-- Ícones UI -->
+    <!-- Fontes Premium -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="app-layout">
         
-        <!-- Controle Flutuante Estilo Apple (Glassmorphism) -->
+        <!-- DOCK FLUTUANTE (APPLE STYLE) -->
         <header class="floating-dock">
             <div class="dock-header">
-                <h2>Carousel Studio</h2>
-                <span class="badge">White Label</span>
+                <h2>Propositum</h2>
+                <span class="badge">PRO</span>
             </div>
             
             <div class="dock-controls">
+                
+                <div class="input-group">
+                    <i data-lucide="key"></i>
+                    <input type="password" id="apiKeyInput" placeholder="Google Gemini API (Opcional)">
+                </div>
+
                 <div class="input-group">
                     <i data-lucide="sparkles"></i>
-                    <input type="text" id="themeInput" placeholder="Sobre o que vamos criar hoje? (ex: Liderança, IA)">
+                    <input type="text" id="themeInput" placeholder="Ex: Gestão de Projetos">
                 </div>
                 
                 <div class="input-group select-group">
-                    <i data-lucide="palette"></i>
+                    <i data-lucide="layout-template"></i>
                     <select id="templateSelect">
-                        <option value="template-corporate">Corporate PRO (Laranja/Dark)</option>
-                        <option value="template-tech">Tecnologia (Azul Escuro)</option>
-                        <option value="template-minimal">Minimalista (Claro/Clean)</option>
-                        <option value="template-neon">Cyberpunk (Neon/Dark)</option>
+                        <option value="layout-tech">1. Tech/Ícones (Fluido)</option>
+                        <option value="layout-corp">2. Blocos/Notícia (Sólido)</option>
                     </select>
                 </div>
 
-                <!-- Upload de Logo -->
-                <div class="logo-upload-wrapper">
-                    <input type="file" id="logoInput" accept="image/png, image/jpeg, image/svg+xml" hidden>
-                    <button id="btnUploadLogo" class="btn-icon">
+                <!-- Controles White Label -->
+                <div class="wl-controls">
+                    <div class="color-picker-wrap" title="Cor da Marca">
+                        <input type="color" id="brandColor" value="#2563eb">
+                    </div>
+                    <button id="btnLogoUpload" class="btn-icon" title="Inserir Logo da Marca">
                         <i data-lucide="image-plus"></i>
-                        <span>Inserir Logo</span>
                     </button>
-                    <div id="logoPreview" class="logo-preview-box"></div>
+                    <input type="file" id="logoInput" accept="image/*" hidden>
                 </div>
 
                 <div class="action-buttons">
-                    <button id="btnGenerate" class="btn-primary">Gerar Slides</button>
-                    <button id="btnDownload" class="btn-success" style="display: none;">
+                    <button id="btnGenerate" class="btn-primary">
+                        <span id="btnGenText">Gerar Carrossel</span>
+                    </button>
+                    <button id="btnDownload" class="btn-download" style="display: none;">
                         <i data-lucide="download"></i> Baixar HD
                     </button>
                 </div>
             </div>
         </header>
 
+        <!-- ÁREA DE TRABALHO -->
         <main class="workspace">
             <div class="carousel-scroll-area">
                 <div id="carouselContainer" class="carousel-container">
                     <div class="empty-state">
                         <div class="empty-icon"><i data-lucide="layers" size="48"></i></div>
-                        <h3>Pronto para criar</h3>
-                        <p>Configure sua logo, digite um tema e veja a mágica acontecer.</p>
+                        <h3>Propositum 1080x1350</h3>
+                        <p>Ajuste sua marca no painel superior e clique em gerar.</p>
                     </div>
                 </div>
             </div>

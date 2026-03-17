@@ -1,145 +1,125 @@
-// --- SISTEMA DE WHITE LABEL (LOGO) ---
-let customLogoBase64 = null;
+let customLogoUrl = null;
 
-document.getElementById('btnUploadLogo').addEventListener('click', () => {
-    document.getElementById('logoInput').click();
-});
-
-document.getElementById('logoInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if(file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            customLogoBase64 = event.target.result;
-            // Mostra miniatura na UI
-            const preview = document.getElementById('logoPreview');
-            preview.style.display = 'block';
-            preview.style.backgroundImage = `url(${customLogoBase64})`;
-            // Troca texto do botão
-            document.querySelector('#btnUploadLogo span').innerText = 'Logo Ok';
-        };
-        reader.readAsDataURL(file);
-    }
-});
-
-// Funções de sorteio
-const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
-const getRandomItems = (arr, count) => [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
-
-// --- MOTOR PROCEDURAL IA ---
-function generateCarouselWithAI(theme) {
-    const rawTheme = theme.trim() || "Inteligência Estratégica";
-    
-    // Arrays de Texto Procedural
-    const tags =["URGENTE!", "TENDÊNCIA 2026", "ALERTA DE MERCADO", "ESTRATÉGIA"];
-    const coverTitles =[
-        `Uma em cada 3 empresas brasileiras trocou de sistema para adotar ${rawTheme} em 2026`,
-        `O impacto brutal da ${rawTheme} nas empresas que querem sobreviver`,
-        `Por que ignorar a ${rawTheme} vai custar o seu negócio neste semestre`,
-        `A ascensão silenciosa da ${rawTheme} na gestão corporativa`
-    ];
-
-    const featureTitles =["Automação Total", "Dados em Tempo Real", "Integração Nativa", "Análise Preditiva", "Redução de Riscos"];
-    const featureDescriptions =[
-        "Substitua o trabalho braçal por processos que rodam sozinhos e sem erros.",
-        "A informação não pode esperar. Ela precisa estar no seu dashboard em segundos.",
-        "Uma base única que une todos os setores, vendas e financeiro da sua empresa.",
-        "Antecipe cenários de mercado utilizando algoritmos matemáticos complexos.",
-        "Elimine gargalos operacionais que corroem a sua margem de lucro mensal."
-    ];
-
-    // Sorteia os cartões
-    const selectedFeatures = getRandomItems(
-        featureTitles.map((t, i) => ({ title: t, description: featureDescriptions[i] })), 
-        3
-    );
-
-    return {
-        slides:[
-            // Slide 1: Capa Impactante
-            { 
-                type: "cover", 
-                tag: getRandomItem(tags), 
-                title: getRandomItem(coverTitles) 
-            },
-            // Slide 2: Notícia (Gera autoridade - Novo Layout)
-            {
-                type: "news",
-                portal: "Valor | Negócios",
-                headline: `Gestão inteligente ganha força com ${rawTheme} em 2026`,
-                sub: "Empresas aceleram a digitalização diante da pressão por eficiência. Automação e integração de dados se consolidam como base da competitividade.",
-                bullets:[
-                    "<strong>A notícia confirma:</strong> A competitividade agora depende de velocidade e dados limpos.",
-                    "<strong>O Risco real:</strong> Se você ainda usa métodos manuais, está fora do movimento que transforma o país."
-                ]
-            },
-            // Slide 3: Cartões Verdes (Estilo EvoluRP)
-            { 
-                type: "feature_list", 
-                title: `O que define uma operação baseada em ${rawTheme}?`, 
-                features: selectedFeatures 
-            },
-            // Slide 4: CTA e Venda
-            { 
-                type: "cta", 
-                title: "Sua empresa precisa evoluir. Nós temos a tecnologia.", 
-                description: `Nosso ecossistema foi desenhado para entregar exatamente o que o mercado exige: implementação perfeita de ${rawTheme}.`, 
-                button: "Clique no link da Bio e agende" 
-            }
-        ]
-    };
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '37, 99, 235';
 }
 
-// --- RENDERIZAÇÃO DOM ---
-function renderCarousel(jsonData, templateClass) {
+document.getElementById('brandColor').addEventListener('input', (e) => {
+    const hex = e.target.value;
+    const rgb = hexToRgb(hex);
+    document.documentElement.style.setProperty('--brand-color', hex);
+    document.documentElement.style.setProperty('--brand-rgb', rgb);
+});
+
+document.getElementById('btnLogoUpload').addEventListener('click', () => document.getElementById('logoInput').click());
+document.getElementById('logoInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        customLogoUrl = ev.target.result;
+        const btn = document.getElementById('btnLogoUpload');
+        btn.innerHTML = '<i data-lucide="check" style="color:var(--brand-color);"></i>';
+        btn.style.borderColor = 'var(--brand-color)';
+        lucide.createIcons();
+        
+        document.querySelectorAll('.brand-logo-container').forEach(container => {
+            container.innerHTML = `<img src="${customLogoUrl}" class="custom-logo-img">`;
+        });
+    };
+    reader.readAsDataURL(file);
+});
+
+const imgBank =[
+    "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=1080&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=1080&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1080&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1080&auto=format&fit=crop"
+];
+const getImg = () => imgBank[Math.floor(Math.random() * imgBank.length)];
+
+const svgChart = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`;
+const svgCode = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`;
+
+// --- CONSTRUTORES DE CONTEÚDO (Isolados do Rodapé) ---
+function buildTechSlide(slide) {
+    let bgHtml = ''; let contentHtml = '';
+    if (slide.type === 'cover') {
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        contentHtml = `<div class="tag">${slide.tag}</div><h1>${slide.title}</h1>`;
+    } else if (slide.type === 'features') {
+        const cards = slide.items.map((i, idx) => {
+            const opacities = [1, 0.8, 0.6, 0.4];
+            return `<div class="feature-card">
+                <div class="icon-box" style="background: rgba(var(--brand-rgb), ${opacities[idx%4]});">${idx%2===0?svgChart:svgCode}</div>
+                <div class="feature-text"><h3>${i.title}</h3><p>${i.desc}</p></div>
+            </div>`;
+        }).join('');
+        contentHtml = `<img src="${getImg()}" class="top-banner" crossorigin="anonymous"><h2>${slide.title}</h2><p class="sub">${slide.subtitle}</p>${cards}`;
+    } else if (slide.type === 'process') {
+        const steps = slide.items.map((i, idx) => `<div class="step-card"><div class="step-num">${idx+1}</div><h3>${i.title}</h3><p>${i.desc}</p></div>`).join('');
+        contentHtml = `<h2>${slide.title}</h2><p class="sub">${slide.subtitle}</p><div class="grid">${steps}</div>`;
+    } else if (slide.type === 'cta') {
+        contentHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><h2>${slide.title}</h2><p>${slide.desc}</p><button class="btn-cta">${slide.button}</button>`;
+    }
+    return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
+}
+
+function buildCorpSlide(slide) {
+    let bgHtml = ''; let contentHtml = '';
+    if (slide.type === 'cover') {
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        contentHtml = `<div class="tag">${slide.tag}</div><h1>${slide.title}</h1>`;
+    } else if (slide.type === 'news') {
+        const bullets = slide.bullets.map(b => `<li>${b}</li>`).join('');
+        contentHtml = `
+            <div class="browser">
+                <div class="browser-header"><span>Q Buscar</span><span class="brand">PROPOSITUM</span><span>Entrar</span></div>
+                <div class="headline">${slide.newsHeadline}</div>
+                <div class="subheadline">${slide.newsSub}</div>
+            </div>
+            <h2>${slide.title}</h2><ul>${bullets}</ul>
+        `;
+    } else if (slide.type === 'features') {
+        const cards = slide.items.map(i => `<div class="feature-card"><h3>${i.title}:</h3> <p>${i.desc}</p></div>`).join('');
+        contentHtml = `<h2>${slide.title}</h2>${cards}`;
+    } else if (slide.type === 'cta') {
+        contentHtml = `<img src="${getImg()}" class="slide-bg-img" crossorigin="anonymous"><h2>${slide.title}</h2><p>${slide.desc}</p><button class="btn-cta">${slide.button}</button>`;
+    }
+    return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
+}
+
+// --- RENDERIZADOR COM RODAPÉ ISOLADO ---
+function renderCarousel(data, template) {
     const container = document.getElementById('carouselContainer');
-    container.innerHTML = ''; 
+    container.innerHTML = '';
 
-    jsonData.slides.forEach((slide, index) => {
-        // Lógica do Rodapé: Exibir Logo + Badge (menos no último slide)
-        const isLastSlide = index === jsonData.slides.length - 1;
-        const logoHtml = customLogoBase64 ? `<img src="${customLogoBase64}" class="brand-logo">` : `<div></div>`;
-        const badgeHtml = !isLastSlide ? `<div class="swipe-badge">Arraste para o lado ></div>` : `<div></div>`;
-        const footerHtml = `<div class="slide-footer">${badgeHtml}${logoHtml}</div>`;
-
+    data.slides.forEach((slide, index) => {
+        const isLast = index === data.slides.length - 1;
         const wrapper = document.createElement('div');
         wrapper.className = 'slide-wrapper';
-        wrapper.style.animationDelay = `${index * 0.1}s`; // Efeito cascata
-
+        
         const slideDiv = document.createElement('div');
-        slideDiv.className = `slide ${slide.type} ${templateClass}`;
+        let slideClassType = slide.type;
+        if(template === 'layout-tech' && slide.type === 'news') slideClassType = 'features';
+        if(template === 'layout-corp' && slide.type === 'process') slideClassType = 'features';
+        
+        slideDiv.className = `slide ${template} slide-${slideClassType}`;
 
-        switch (slide.type) {
-            case 'cover':
-                slideDiv.innerHTML = `<span class="tag">${slide.tag}</span><h1>${slide.title}</h1>`;
-                break;
-            case 'news':
-                const bulletsHtml = slide.bullets.map(b => `<li>${b}</li>`).join('');
-                slideDiv.innerHTML = `
-                    <div class="news-browser">
-                        <div class="news-header"><span>Q Buscar</span><span>${slide.portal}</span><span>Entrar</span></div>
-                        <h2 class="news-headline">${slide.headline}</h2>
-                        <p class="news-sub">${slide.sub}</p>
-                    </div>
-                    <h2 class="slide-title" style="font-size: 55px; margin-bottom: 40px; border:none; padding:0;">Em 2026, não há espaço para lentidão.</h2>
-                    <ul>${bulletsHtml}</ul>
-                `;
-                break;
-            case 'feature_list':
-                const featuresHtml = slide.features.map(f => `
-                    <div class="feature-card">
-                        <div class="feature-text"><h3>${f.title}</h3><p>${f.description}</p></div>
-                    </div>`).join('');
-                slideDiv.innerHTML = `<h2 class="slide-title">${slide.title}</h2><div class="features-grid">${featuresHtml}</div>`;
-                break;
-            case 'cta':
-                slideDiv.innerHTML = `<h2>${slide.title}</h2><p>${slide.description}</p><div class="cta-button">${slide.button}</div>`;
-                break;
-        }
+        let slideHTML = template === 'layout-tech' ? buildTechSlide(slide) : buildCorpSlide(slide);
+        
+        const logoContent = customLogoUrl ? `<img src="${customLogoUrl}" class="custom-logo-img">` : `<span class="default-logo-text">Sua Marca</span>`;
 
-        // Injeta o rodapé
-        slideDiv.innerHTML += footerHtml;
+        // Rodapé anexado por fora do conteúdo, guiado por flexbox para nunca sofrer sobreposição
+        const footerHtml = `
+            <div class="slide-footer">
+                <div class="brand-logo-container">${logoContent}</div>
+                ${!isLast ? `<div class="swipe-btn">ARRASTE PARA O LADO &gt;</div>` : '<div></div>'}
+            </div>
+        `;
 
+        slideDiv.innerHTML = slideHTML + footerHtml;
         wrapper.appendChild(slideDiv);
         container.appendChild(wrapper);
     });
@@ -147,68 +127,113 @@ function renderCarousel(jsonData, templateClass) {
     document.getElementById('btnDownload').style.display = 'flex';
 }
 
-// --- EVENTOS E DOWNLOAD ---
-document.getElementById('btnGenerate').addEventListener('click', () => {
-    const themeInput = document.getElementById('themeInput').value;
-    const templateSelect = document.getElementById('templateSelect').value;
+function getMockData(template, topic) {
+    const t = topic || "Seu Negócio";
+    if (template === 'layout-tech') {
+        return {
+            slides:[
+                { type: "cover", tag: "TENDÊNCIA", title: `Como a Inovação Está Redefinindo o ${t}` },
+                { type: "features", title: "Decisões Estratégicas", subtitle: "Transforme dados em ativos:", items:[
+                    { title: "Tomada de Decisão", desc: "Antecipe o mercado." },
+                    { title: "Previsão", desc: "Saiba o que o cliente quer." },
+                    { title: "Automação", desc: "Deixe a IA trabalhar." }
+                ]},
+                { type: "process", title: "Qual o processo?", subtitle: "O Passo a Passo:", items:[
+                    { title: "Mapeamento", desc: "Análise da sua operação." },
+                    { title: "Estratégia", desc: "Definição de metas." },
+                    { title: "Execução", desc: "Uso das ferramentas." },
+                    { title: "Resultados", desc: "Acompanhamento real." }
+                ]},
+                { type: "cta", title: "Pronto para inovar?", desc: "Eleve sua operação a um novo patamar.", button: "Agende uma Reunião" }
+            ]
+        };
+    } else {
+        return {
+            slides:[
+                { type: "cover", tag: "URGENTE!", title: `Por que as empresas estão investindo em ${t}` },
+                { type: "news", newsHeadline: `Mercado acelera adoção de ${t}`, newsSub: "A digitalização se torna obrigatória diante da pressão por eficiência e produtividade.", title: "Não há espaço para lentidão.", bullets:[
+                    "<strong>O Fato:</strong> A competitividade depende de ações rápidas.",
+                    "<strong>O Risco:</strong> Empresas atrasadas perderão fatia de mercado."
+                ]},
+                { type: "features", title: `Pilares Fundamentais:`, items:[
+                    { title: "Automação", desc: "Substituir trabalho braçal por processos eficientes." },
+                    { title: "Dados", desc: "A informação não pode esperar o fim do mês." },
+                    { title: "Integração", desc: "Base única unindo todos os setores." }
+                ]},
+                { type: "cta", title: "Sua empresa precisa evoluir.", desc: "Nós temos as soluções que o mercado exige hoje.", button: "Fale com nossos especialistas" }
+            ]
+        };
+    }
+}
+
+async function fetchGeminiData(theme, template, apiKey) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const promptTech = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}]},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    const promptCorp = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Noticia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+
+    try {
+        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: template === 'layout-tech' ? promptTech : promptCorp }] }] }) });
+        if (!response.ok) throw new Error("Chave inválida");
+        const data = await response.json();
+        return JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim());
+    } catch (error) {
+        console.error(error); return null;
+    }
+}
+
+// --- BOTÃO GERAR ---
+document.getElementById('btnGenerate').addEventListener('click', async () => {
+    const apiKey = document.getElementById('apiKeyInput').value.trim();
+    const themeStr = document.getElementById('themeInput').value.trim();
+    const template = document.getElementById('templateSelect').value;
     const btn = document.getElementById('btnGenerate');
-    const container = document.getElementById('carouselContainer');
-    
-    btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Processando...';
+
+    btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Gerando...';
     btn.disabled = true;
     lucide.createIcons();
-    
-    document.getElementById('btnDownload').style.display = 'none';
-    
-    // UI Loading State
-    container.innerHTML = `<div class="empty-state"><h3>Mapeando dados para "${themeInput || 'seu tema'}"</h3><p>Aplicando design system e marca...</p></div>`;
-    
-    setTimeout(() => {
-        const jsonResult = generateCarouselWithAI(themeInput);
-        renderCarousel(jsonResult, templateSelect);
-        
-        btn.innerHTML = '<i data-lucide="refresh-cw"></i> Refazer';
-        btn.disabled = false;
-        lucide.createIcons();
-    }, 1200);
+
+    if (!apiKey) {
+        const data = getMockData(template, themeStr);
+        renderCarousel(data, template);
+    } else {
+        const aiData = await fetchGeminiData(themeStr, template, apiKey);
+        if (aiData) renderCarousel(aiData, template);
+        else alert("Erro na geração. Tente outro tema ou verifique a API Key.");
+    }
+
+    btn.innerHTML = 'Gerar Carrossel';
+    btn.disabled = false;
 });
 
-// Download via HTML2Canvas (Corrigido para formato retrato)
+// --- EXPORTAR HD (1080x1350) ---
 document.getElementById('btnDownload').addEventListener('click', async () => {
     const btn = document.getElementById('btnDownload');
-    btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Processando...';
+    const originalContent = btn.innerHTML;
+    
+    btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Processando';
     btn.disabled = true;
     lucide.createIcons();
 
     const slides = document.querySelectorAll('.slide');
-    
     for (let i = 0; i < slides.length; i++) {
         const slide = slides[i];
         
-        // Remove escala temporariamente para captura 4k/HD real
         const originalTransform = slide.style.transform;
         slide.style.transform = 'none';
         
-        const canvas = await html2canvas(slide, {
-            width: 1080, height: 1350, scale: 1, useCORS: true, backgroundColor: null
-        });
+        const canvas = await html2canvas(slide, { width: 1080, height: 1350, scale: 1, useCORS: true });
         
         slide.style.transform = originalTransform;
 
         const link = document.createElement('a');
-        link.download = `Carousel_Slide_0${i + 1}.png`;
+        link.download = `Propositum_Slide_${i + 1}.png`;
         link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
         
-        await new Promise(r => setTimeout(r, 300));
+        await new Promise(r => setTimeout(r, 400));
     }
     
-    btn.innerHTML = '<i data-lucide="download"></i> Baixar HD';
+    btn.innerHTML = originalContent;
     btn.disabled = false;
     lucide.createIcons();
-});
-
-// Suporte ao Enter
-document.getElementById('themeInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') document.getElementById('btnGenerate').click();
 });
