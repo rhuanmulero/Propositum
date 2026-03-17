@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Carrossel IA - 1080x1350</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Biblioteca para transformar HTML em Imagem -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <header class="top-bar">
+            <h1>✦ AI Carousel Studio (1080x1350)</h1>
+            <p>Gere slides retrato profissionais, escolha o design e baixe instantaneamente</p>
+            <div class="input-area">
+                <input type="text" id="themeInput" placeholder="Digite o tema (ex: Liderança, IA, Marketing...)">
+                
+                <!-- Novo Seletor de Templates -->
+                <select id="templateSelect" class="template-select">
+                    <option value="template-tech">Consultoria Tech (Azul)</option>
+                    <option value="template-minimal">Minimalista (Claro)</option>
+                    <option value="template-neon">Cyberpunk (Neon)</option>
+                </select>
+
+                <button id="btnGenerate">Gerar Carrossel</button>
+                <button id="btnDownload" style="display: none;">Baixar Imagens</button>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <div class="carousel-scroll-area">
+                <div id="carouselContainer" class="carousel-container">
+                    <div class="empty-state">Digite um tema, escolha um visual e clique em Gerar.</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
