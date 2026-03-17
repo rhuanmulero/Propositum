@@ -3,38 +3,43 @@ let targetImageToReplace = null;
 
 function hexToRgb(hex) {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '234, 88, 12';
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
 }
 
-function updateColors(bg, brand) {
+function updateColors(bg, brand, text) {
     document.getElementById('bgColor').value = bg;
     document.getElementById('brandColor').value = brand;
+    document.getElementById('textColor').value = text;
+    
     document.documentElement.style.setProperty('--bg-color', bg);
     document.documentElement.style.setProperty('--bg-rgb', hexToRgb(bg));
     document.documentElement.style.setProperty('--brand-color', brand);
     document.documentElement.style.setProperty('--brand-rgb', hexToRgb(brand));
+    document.documentElement.style.setProperty('--text-color', text);
+    document.documentElement.style.setProperty('--text-rgb', hexToRgb(text));
 }
 
-// Escuta Mudanças de Template para Auto-Ajustar as Cores
+// Escuta Mudanças de Template para Auto-Ajustar as 3 Cores
 document.getElementById('templateSelect').addEventListener('change', (e) => {
     const val = e.target.value;
     const defaultColors = {
-        'layout-tech': { bg: '#081225', brand: '#ea580c' },
-        'layout-corp': { bg: '#18181b', brand: '#ea580c' },
-        'layout-minimal': { bg: '#ffffff', brand: '#000000' },
-        'layout-neon': { bg: '#09090b', brand: '#ec4899' },
-        'layout-editorial': { bg: '#f4f0ec', brand: '#8b4513' },
-        'layout-glass': { bg: '#0f172a', brand: '#3b82f6' },
-        'layout-bold': { bg: '#fbbf24', brand: '#000000' }
+        'layout-tech': { bg: '#081225', brand: '#ea580c', text: '#ffffff' },
+        'layout-corp': { bg: '#18181b', brand: '#ea580c', text: '#ffffff' },
+        'layout-minimal': { bg: '#ffffff', brand: '#000000', text: '#111111' },
+        'layout-neon': { bg: '#09090b', brand: '#ec4899', text: '#ffffff' },
+        'layout-editorial': { bg: '#f4f0ec', brand: '#8b4513', text: '#222222' },
+        'layout-glass': { bg: '#0f172a', brand: '#3b82f6', text: '#ffffff' },
+        'layout-bold': { bg: '#fbbf24', brand: '#000000', text: '#000000' }
     };
     if (defaultColors[val]) {
-        updateColors(defaultColors[val].bg, defaultColors[val].brand);
+        updateColors(defaultColors[val].bg, defaultColors[val].brand, defaultColors[val].text);
     }
 });
 
 // Atualizações Manuais de Cor
-document.getElementById('brandColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, e.target.value));
-document.getElementById('bgColor').addEventListener('input', (e) => updateColors(e.target.value, document.getElementById('brandColor').value));
+document.getElementById('brandColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, e.target.value, document.getElementById('textColor').value));
+document.getElementById('bgColor').addEventListener('input', (e) => updateColors(e.target.value, document.getElementById('brandColor').value, document.getElementById('textColor').value));
+document.getElementById('textColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, document.getElementById('brandColor').value, e.target.value));
 
 document.getElementById('btnLogoUpload').addEventListener('click', () => document.getElementById('logoInput').click());
 document.getElementById('logoInput').addEventListener('change', (e) => {
@@ -82,7 +87,7 @@ const getImg = () => imgBank[Math.floor(Math.random() * imgBank.length)];
 
 const getIcon = (idx) => {
     const iconNames =['bar-chart-2', 'users', 'code', 'trending-up', 'check-circle'];
-    return `<i data-lucide="${iconNames[idx % iconNames.length]}" style="width: 32px; height: 32px;"></i>`;
+    return `<i data-lucide="${iconNames[idx % iconNames.length]}" style="width: 32px; height: 32px; color: currentColor;"></i>`;
 };
 
 // --- ESTRUTURA A (Tech, Minimal, Neon, Glass) ---
@@ -208,7 +213,7 @@ function renderCarousel(data, template) {
 
 function getMockData(template, topic) {
     const t = topic || "Seu Negócio";
-    const isStructureA = ['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
+    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
     
     if (isStructureA) {
         return {
