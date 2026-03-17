@@ -77,6 +77,32 @@ button:active { transform: scale(0.96); }
 .empty-state h3 { font-size: 20px; font-weight: 600; margin-bottom: 10px; color: #fff;}
 @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
+/* --- TOOLBAR DE IMAGEM (CONTEXT MENU) --- */
+.image-toolbar {
+    position: fixed;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 6px; border-radius: 12px;
+    display: flex; gap: 6px;
+    z-index: 10000;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    transform: translate(-50%, -120%);
+    pointer-events: auto;
+}
+.toolbar-btn {
+    background: transparent; color: #fff; border: none;
+    padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; font-family: 'Inter', sans-serif; font-weight: 600;
+    transition: background 0.2s; user-select: none;
+}
+.toolbar-btn:hover { background: rgba(255,255,255,0.15); }
+.toolbar-btn i { width: 16px; height: 16px; }
+#btnToolbarMove { cursor: grab; }
+#btnToolbarMove:active { cursor: grabbing; }
+
+
 /* --- MODAL DE CROP --- */
 .crop-modal-overlay {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -91,24 +117,21 @@ button:active { transform: scale(0.96); }
 .crop-workspace { width: 100%; height: 400px; background: #111; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
 .crop-actions { display: flex; justify-content: flex-end; gap: 10px; }
 
-/* --- GUIAS DE ALINHAMENTO TIPO CANVA --- */
-.guide-line { position: absolute; background-color: #f10594; z-index: 9999; pointer-events: none; display: none; box-shadow: 0 0 4px rgba(0,0,0,0.3); }
-.guide-v { width: 2px; height: 100%; top: 0; left: 540px; transform: translateX(-50%); }
-.guide-h { width: 100%; height: 2px; left: 0; top: 675px; transform: translateY(-50%); }
-
+/* --- GUIAS DE ALINHAMENTO MAGNÉTICO (Estilo Canva) --- */
+.guide-line { position: absolute; background-color: #f10594; z-index: 9999; pointer-events: none; display: none; box-shadow: 0 0 2px rgba(0,0,0,0.2); }
+.guide-v { width: 1.5px; height: 100%; top: 0; transform: translateX(-50%); }
+.guide-h { width: 100%; height: 1.5px; left: 0; transform: translateY(-50%); }
 
 /* --- EDIÇÃO AO VIVO E DRAG & DROP --- */
 .draggable { position: relative; cursor: grab; }
 .draggable:active { cursor: grabbing; }
 
-[contenteditable="true"] { outline: none; border-radius: 8px; transition: outline 0.2s, background 0.2s; }
-[contenteditable="true"]:hover { outline: 2px dashed rgba(var(--text-rgb), 0.4); cursor: text; background: rgba(var(--text-rgb), 0.05); }
-[contenteditable="true"]:focus { outline: 2px solid var(--brand-color); background: rgba(0,0,0,0.3); cursor: text; }
+[contenteditable="true"] { outline: none; border-radius: 8px; transition: outline 0.2s, background 0.2s; }[contenteditable="true"]:hover { outline: 2px dashed rgba(var(--text-rgb), 0.4); cursor: text; background: rgba(var(--text-rgb), 0.05); }[contenteditable="true"]:focus { outline: 2px solid var(--brand-color); background: rgba(0,0,0,0.3); cursor: text; }
 
-.editable-img { transition: filter 0.3s, outline 0.3s; cursor: pointer;}
+.editable-img { transition: filter 0.3s, outline 0.3s; cursor: pointer; -webkit-user-drag: none; }
 .editable-img:hover { outline: 4px dashed var(--brand-color); outline-offset: -4px; filter: brightness(0.6); }
 
-/* --- BASE DOS SLIDES (PERMITINDO CLICAR NA IMAGEM DE FUNDO DA CAPA) --- */
+/* --- BASE DOS SLIDES --- */
 .slide-wrapper { width: 432px; height: 540px; flex-shrink: 0; position: relative; border-right: 2px dashed rgba(255,255,255,0.25); }
 .slide-wrapper:last-child { border-right: none; }
 .slide { width: 1080px; height: 1350px; transform: scale(0.4); transform-origin: top left; position: relative; overflow: hidden; display: flex; flex-direction: column; background-color: var(--bg-color); color: var(--text-color); }

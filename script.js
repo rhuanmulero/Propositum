@@ -56,12 +56,24 @@ document.getElementById('logoInput').addEventListener('change', (e) => {
     reader.readAsDataURL(file);
 });
 
-// Lógica de Edição de Imagem com CROP
-document.getElementById('carouselContainer').addEventListener('click', (e) => {
+
+// --- LÓGICA DO MENU DE CONTEXTO PARA IMAGENS ---
+document.addEventListener('click', (e) => {
     if (e.target.classList.contains('editable-img')) {
         targetImageToReplace = e.target;
-        document.getElementById('slideImageInput').click();
+        const toolbar = document.getElementById('imageToolbar');
+        toolbar.style.display = 'flex';
+        toolbar.style.left = e.clientX + 'px';
+        toolbar.style.top = (e.clientY - 40) + 'px'; 
+    } 
+    else if (!e.target.closest('#imageToolbar')) {
+        document.getElementById('imageToolbar').style.display = 'none';
     }
+});
+
+document.getElementById('btnToolbarChange').addEventListener('click', () => {
+    document.getElementById('slideImageInput').click();
+    document.getElementById('imageToolbar').style.display = 'none';
 });
 
 document.getElementById('slideImageInput').addEventListener('change', (e) => {
@@ -98,44 +110,96 @@ document.getElementById('btnApplyCrop').addEventListener('click', () => {
     }
 });
 
-// --- LÓGICA DE ARRASTAR, SOLTAR E GUIAS MAGNÉTICAS (CANVA STYLE) ---
+// --- LÓGICA CANVA: ARRASTAR, SOLTAR E ALINHAMENTO COM OUTROS ELEMENTOS ---
 let draggedEl = null;
 let startX = 0, startY = 0;
 let initLeft = 0, initTop = 0;
 let isDragging = false;
-let baseCenterX = 0, baseCenterY = 0;
+
+// Variáveis de escopo para as posições reais na prancheta
+let baseLeft = 0, baseRight = 0, baseTop = 0, baseBottom = 0, baseCenterX = 0, baseCenterY = 0;
 let currentSlide = null;
+let snapTargets =[]; // Irá armazenar todos os eixos X e Y de outros elementos
 
-document.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return; // Apenas clique esquerdo
-    const draggable = e.target.closest('.draggable');
-    if (!draggable) return;
-
-    // Se estiver focando para editar texto, permite o clique original sem arrastar
-    if (draggable.isContentEditable && document.activeElement === draggable) return;
-
-    draggedEl = draggable;
+function initDragSetup(el, e) {
+    draggedEl = el;
     currentSlide = draggedEl.closest('.slide');
+    
     startX = e.clientX;
     startY = e.clientY;
     initLeft = parseFloat(draggedEl.style.left) || 0;
     initTop = parseFloat(draggedEl.style.top) || 0;
     isDragging = false;
 
-    // Extrai a posição neutra do elemento baseada na prancheta para conseguir o snap magnético
     const oldLeft = draggedEl.style.left;
     const oldTop = draggedEl.style.top;
     draggedEl.style.left = '0px';
     draggedEl.style.top = '0px';
 
+    const scale = 0.4; // A escala aplicada no CSS (.slide)
     const slideRect = currentSlide.getBoundingClientRect();
     const elRect = draggedEl.getBoundingClientRect();
 
-    baseCenterX = ((elRect.left - slideRect.left) + elRect.width / 2) / 0.4;
-    baseCenterY = ((elRect.top - slideRect.top) + elRect.height / 2) / 0.4;
+    baseLeft = (elRect.left - slideRect.left) / scale;
+    baseTop = (elRect.top - slideRect.top) / scale;
+    const elWidth = elRect.width / scale;
+    const elHeight = elRect.height / scale;
+
+    baseRight = baseLeft + elWidth;
+    baseBottom = baseTop + elHeight;
+    baseCenterX = baseLeft + elWidth / 2;
+    baseCenterY = baseTop + elHeight / 2;
 
     draggedEl.style.left = oldLeft;
     draggedEl.style.top = oldTop;
+
+    // Constrói o radar magnético com todos os outros elementos do slide
+    snapTargets =[];
+    
+    // 1. Limites do Slide Inteiro (Bordas e Centro)
+    snapTargets.push({
+        x:[0, 540, 1080],
+        y: [0, 675, 1350]
+    });
+
+    // 2. Limites dos outros elementos na tela
+    const siblings = currentSlide.querySelectorAll('.draggable');
+    siblings.forEach(sibling => {
+        if (sibling === draggedEl) return;
+        const sRect = sibling.getBoundingClientRect();
+        
+        // Ignora elementos vazios ou escondidos
+        if (sRect.width === 0 || sRect.height === 0) return;
+        
+        const sLeft = (sRect.left - slideRect.left) / scale;
+        const sTop = (sRect.top - slideRect.top) / scale;
+        const sWidth = sRect.width / scale;
+        const sHeight = sRect.height / scale;
+
+        snapTargets.push({
+            x: [sLeft, sLeft + sWidth / 2, sLeft + sWidth],
+            y: [sTop, sTop + sHeight / 2, sTop + sHeight]
+        });
+    });
+}
+
+document.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+
+    if (e.target.closest('#btnToolbarMove')) {
+        e.preventDefault();
+        const elToMove = targetImageToReplace.closest('.draggable') || targetImageToReplace;
+        document.getElementById('imageToolbar').style.display = 'none';
+        initDragSetup(elToMove, e);
+        return;
+    }
+
+    const draggable = e.target.closest('.draggable');
+    if (!draggable) return;
+    if (draggable.isContentEditable && document.activeElement === draggable) return;
+    if (e.target.classList.contains('editable-img')) return; 
+
+    initDragSetup(draggable, e);
 });
 
 document.addEventListener('mousemove', (e) => {
@@ -148,51 +212,69 @@ document.addEventListener('mousemove', (e) => {
     let rawLeft = initLeft + dx;
     let rawTop = initTop + dy;
 
+    // Consegue a posição atual exata das bordas de quem está sendo arrastado
+    let currentLeft = baseLeft + rawLeft;
+    let currentRight = baseRight + rawLeft;
     let currentCenterX = baseCenterX + rawLeft;
+
+    let currentTop = baseTop + rawTop;
+    let currentBottom = baseBottom + rawTop;
     let currentCenterY = baseCenterY + rawTop;
 
     let snappedX = false;
     let snappedY = false;
-    const snapTolerance = 25; // Força magnética (em pixels da tela/canva)
+    let guideX = 0;
+    let guideY = 0;
+    const snapTolerance = 15; // Quão forte é o "Ímã" 
 
-    // Snap Vertical (X)
-    if (Math.abs(currentCenterX - 540) < snapTolerance) {
-        rawLeft = 540 - baseCenterX;
-        snappedX = true;
-    }
+    let minDiffX = snapTolerance;
+    let minDiffY = snapTolerance;
 
-    // Snap Horizontal (Y)
-    if (Math.abs(currentCenterY - 675) < snapTolerance) {
-        rawTop = 675 - baseCenterY;
-        snappedY = true;
-    }
+    // Varre todos os outros elementos para ver se bateu com alguma margem
+    snapTargets.forEach(target => {
+        target.x.forEach(tx => {
+            if (Math.abs(currentLeft - tx) < minDiffX) { minDiffX = Math.abs(currentLeft - tx); rawLeft = tx - baseLeft; snappedX = true; guideX = tx; }
+            if (Math.abs(currentCenterX - tx) < minDiffX) { minDiffX = Math.abs(currentCenterX - tx); rawLeft = tx - baseCenterX; snappedX = true; guideX = tx; }
+            if (Math.abs(currentRight - tx) < minDiffX) { minDiffX = Math.abs(currentRight - tx); rawLeft = tx - baseRight; snappedX = true; guideX = tx; }
+        });
+
+        target.y.forEach(ty => {
+            if (Math.abs(currentTop - ty) < minDiffY) { minDiffY = Math.abs(currentTop - ty); rawTop = ty - baseTop; snappedY = true; guideY = ty; }
+            if (Math.abs(currentCenterY - ty) < minDiffY) { minDiffY = Math.abs(currentCenterY - ty); rawTop = ty - baseCenterY; snappedY = true; guideY = ty; }
+            if (Math.abs(currentBottom - ty) < minDiffY) { minDiffY = Math.abs(currentBottom - ty); rawTop = ty - baseBottom; snappedY = true; guideY = ty; }
+        });
+    });
 
     draggedEl.style.left = `${rawLeft}px`;
     draggedEl.style.top = `${rawTop}px`;
-    draggedEl.style.zIndex = '1000'; // Traz para frente ao arrastar
+    draggedEl.style.zIndex = '1000'; 
     
-    // Liga ou desliga as linhas vermelhas visuais se bater com o centro do slide
+    // Exibe as linhas visuais dinamicamente
     if (currentSlide) {
         const guideV = currentSlide.querySelector('.guide-v');
         const guideH = currentSlide.querySelector('.guide-h');
-        if(guideV) guideV.style.display = snappedX ? 'block' : 'none';
-        if(guideH) guideH.style.display = snappedY ? 'block' : 'none';
+        
+        if(guideV) { 
+            guideV.style.display = snappedX ? 'block' : 'none'; 
+            guideV.style.left = `${guideX}px`; 
+        }
+        if(guideH) { 
+            guideH.style.display = snappedY ? 'block' : 'none'; 
+            guideH.style.top = `${guideY}px`; 
+        }
     }
 
-    window.getSelection().removeAllRanges(); // Evita marcar/selecionar texto sem querer
+    window.getSelection().removeAllRanges(); 
 });
 
 document.addEventListener('mouseup', () => {
     if (draggedEl) {
-        if (!isDragging && draggedEl.isContentEditable) {
-            draggedEl.focus(); 
-        }
+        if (!isDragging && draggedEl.isContentEditable) draggedEl.focus(); 
         draggedEl.style.zIndex = '';
         draggedEl = null;
         isDragging = false;
     }
     
-    // Esconde as guias sempre que finalizar qualquer arraste
     document.querySelectorAll('.guide-line').forEach(el => el.style.display = 'none');
     currentSlide = null;
 });
@@ -217,7 +299,7 @@ function buildStructureA(slide) {
     const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
 
     if (slide.type === 'cover') {
-        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar fundo" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
         contentHtml = `<div class="tag draggable" contenteditable="true" spellcheck="false">${slide.tag}</div>
                        <h1 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h1>`;
     } else if (slide.type === 'features') {
@@ -227,7 +309,7 @@ function buildStructureA(slide) {
                 <div class="feature-text"><h3 contenteditable="true" spellcheck="false">${i.title}:</h3> <p contenteditable="true" spellcheck="false">${i.desc}</p></div>
             </div>`;
         }).join('');
-        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" crossorigin="anonymous"></div>
         <h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2>
         <p class="sub draggable" contenteditable="true" spellcheck="false">${slide.subtitle}</p>${cards}`;
     } else if (slide.type === 'process') {
@@ -237,7 +319,7 @@ function buildStructureA(slide) {
         <div class="grid">${steps}</div>
         ${slide.footerText ? `<p class="process-footer draggable" contenteditable="true" spellcheck="false">${slide.footerText}</p>` : ''}`;
     } else if (slide.type === 'cta') {
-        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" crossorigin="anonymous"></div>
         <h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2>
         <p class="desc draggable" contenteditable="true" spellcheck="false">${slide.desc}</p>
         <button class="btn-cta draggable" contenteditable="true" spellcheck="false">${slide.button}</button>
@@ -252,7 +334,7 @@ function buildStructureB(slide) {
     const siteUrl = document.getElementById('websiteInput').value.trim() || 'seusite.com.br';
 
     if (slide.type === 'cover') {
-        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" title="Clique para alterar fundo" crossorigin="anonymous"><div class="slide-gradient"></div>`;
+        bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
         contentHtml = `<div class="tag draggable" contenteditable="true" spellcheck="false">${slide.tag}</div>
                        <h1 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h1>`;
     } else if (slide.type === 'news') {
@@ -273,7 +355,7 @@ function buildStructureB(slide) {
         const cards = slide.items.slice(0, 3).map(i => `<div class="feature-card draggable"><h3 contenteditable="true" spellcheck="false">${i.title}:</h3> <p contenteditable="true" spellcheck="false">${i.desc}</p></div>`).join('');
         contentHtml = `<h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2><div class="features-list">${cards}</div>`;
     } else if (slide.type === 'cta') {
-        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" title="Clique para alterar" crossorigin="anonymous"></div>
+        contentHtml = `<div class="top-img-container draggable"><img src="${getImg()}" class="top-banner editable-img" crossorigin="anonymous"></div>
         <h2 class="draggable" contenteditable="true" spellcheck="false">${slide.title}</h2>
         <p class="desc draggable" contenteditable="true" spellcheck="false">${slide.desc}</p>
         <button class="btn-cta draggable" contenteditable="true" spellcheck="false">${slide.button}</button>
@@ -323,7 +405,7 @@ function renderCarousel(data, template) {
             `;
         }
 
-        // Adiciona as Linhas Guia da Estrutura Invisíveis na Árvore HTML
+        // Adiciona as Linhas Guia Invisíveis Dinâmicas (Em toda a tela do slide)
         const guidesHtml = `
             <div class="guide-line guide-v"></div>
             <div class="guide-line guide-h"></div>
@@ -387,7 +469,7 @@ async function fetchGeminiData(theme, template, apiKey) {
     const promptCorp = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}] // MÁX 3 ITENS},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
 
     try {
-        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });
+        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents:[{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });
         if (!response.ok) throw new Error("Chave inválida");
         const data = await response.json();
         return JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim());
@@ -427,7 +509,7 @@ document.getElementById('btnDownload').addEventListener('click', async () => {
     btn.disabled = true;
     lucide.createIcons();
 
-    // Desliga qualquer guia ou foco ativo na tela
+    document.getElementById('imageToolbar').style.display = 'none';
     document.querySelectorAll('.guide-line').forEach(el => el.style.display = 'none');
     if (document.activeElement) document.activeElement.blur();
     window.getSelection().removeAllRanges(); 
