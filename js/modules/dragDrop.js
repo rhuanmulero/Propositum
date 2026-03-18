@@ -1,10 +1,11 @@
 import { AppState } from '../state.js';
 import { updateSelectionBox } from './editor.js';
+import { saveState } from './history.js';
 
 let draggedEl = null;
 let startX = 0, startY = 0, initLeft = 0, initTop = 0, isDragging = false;
 let baseLeft = 0, baseRight = 0, baseTop = 0, baseBottom = 0, baseCx = 0, baseCy = 0;
-let sibBounds = [], existingGapsX =[], existingGapsY =[];
+let sibBounds =[], existingGapsX =[], existingGapsY =[];
 let currentSlide = null;
 
 function initDragSetup(el, e) {
@@ -69,8 +70,8 @@ export function initDragAndDropEvents() {
 
         if (e.target.closest('#btnToolbarMove')) {
             e.preventDefault();
-            const elToMove = AppState.targetImageToReplace.closest('.draggable') || AppState.targetImageToReplace;
-            document.getElementById('imageToolbar').style.display = 'none';
+            const elToMove = AppState.selectedElement;
+            document.getElementById('elementToolbar').style.display = 'none';
             initDragSetup(elToMove, e);
             return;
         }
@@ -101,7 +102,7 @@ export function initDragAndDropEvents() {
         if(Math.abs(curCx - 540) < bestDistX) { bestDistX = Math.abs(curCx - 540); snapXVal = rawLeft + (540 - curCx); guideX = 540; }
         if(Math.abs(curCy - 675) < bestDistY) { bestDistY = Math.abs(curCy - 675); snapYVal = rawTop + (675 - curCy); guideY = 675; }
 
-        sibBounds.forEach(sib => {[ [curL, sib.l],[curL, sib.r], [curCx, sib.cx],[curR, sib.l],[curR, sib.r] ].forEach(pair => {
+        sibBounds.forEach(sib => {[ [curL, sib.l],[curL, sib.r],[curCx, sib.cx],[curR, sib.l],[curR, sib.r] ].forEach(pair => {
                 let diff = Math.abs(pair[0] - pair[1]);
                 if(diff < bestDistX) { bestDistX = diff; snapXVal = rawLeft + (pair[1] - pair[0]); guideX = pair[1]; }
             });
@@ -128,6 +129,7 @@ export function initDragAndDropEvents() {
 
     document.addEventListener('mouseup', () => {
         if (draggedEl) {
+            if (isDragging) saveState(); // Salvar histórico ao terminar de arrastar
             if (!isDragging && draggedEl.isContentEditable) draggedEl.focus(); 
             draggedEl.style.zIndex = '';
             draggedEl = null;

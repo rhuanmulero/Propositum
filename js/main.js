@@ -147,17 +147,24 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
     btn.disabled = true;
     window.lucide.createIcons();
 
-    if (!apiKey) {
-        const data = getMockData(template, themeStr);
-        renderCarousel(data, template);
-    } else {
-        const aiData = await fetchGeminiData(themeStr, template, apiKey);
-        if (aiData) renderCarousel(aiData, template);
-        else alert("Erro na geração. Verifique a API Key.");
+    try {
+        if (!apiKey) {
+            const data = getMockData(template, themeStr);
+            renderCarousel(data, template);
+        } else {
+            const aiData = await fetchGeminiData(themeStr, template, apiKey);
+            if (aiData) renderCarousel(aiData, template);
+            else alert("Erro na geração. Verifique a API Key ou aguarde alguns minutos e tente novamente.");
+        }
+    } catch (error) {
+        console.error("Erro no processo de geração:", error);
+        alert("Ocorreu um erro inesperado ao gerar o carrossel.");
+    } finally {
+        // O finally garante que independente do que acontecer (erro ou sucesso), o botão volta ao normal
+        btn.innerHTML = 'Gerar';
+        btn.disabled = false;
+        window.lucide.createIcons();
     }
-
-    btn.innerHTML = 'Gerar IA';
-    btn.disabled = false;
 });
 
 document.getElementById('btnDownload').addEventListener('click', downloadCarousel);

@@ -7,5 +7,9 @@ export const AppState = {
     currentTool: 'pointer', 
     canvasScale: 0.35, 
     canvasX: 200,    
-    canvasY: 150      
+    canvasY: 150,
+
+    history:[],
+    historyIndex: -1,
+    isUndoRedo: false
 };

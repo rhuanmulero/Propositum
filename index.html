@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/main.css">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
@@ -18,14 +18,19 @@
     
     <div class="app-layout">
         
-        <!-- FIGMA LIKE TOOLBAR (Topo Esquerdo) -->
+        <!-- FIGMA LIKE TOOLBAR (Esquerda Vertical) -->
         <div class="figma-toolbar">
             <button class="tool-btn active" data-tool="pointer" title="Mover (V)"><i data-lucide="mouse-pointer-2"></i></button>
             <button class="tool-btn" data-tool="hand" title="Mão / Navegar (H / Espaço)"><i data-lucide="hand"></i></button>
-            <div class="toolbar-divider"></div>
+            <div class="divider-h"></div>
             <button class="tool-btn" id="btnAddText" title="Texto (T)"><i data-lucide="type"></i></button>
             <button class="tool-btn" id="btnAddRect" title="Retângulo (R)"><i data-lucide="square"></i></button>
             <button class="tool-btn" id="btnAddCircle" title="Círculo (O)"><i data-lucide="circle"></i></button>
+            <div class="divider-h"></div>
+            <button class="tool-btn" id="btnAddCard" title="Adicionar Card"><i data-lucide="layout"></i></button>
+            <button class="tool-btn" id="btnAddButton" title="Adicionar Botão"><i data-lucide="mouse-pointer-click"></i></button>
+            <button class="tool-btn" id="btnAddBadge" title="Adicionar Tag/Badge"><i data-lucide="tag"></i></button>
+            <div class="divider-h"></div>
             <button class="tool-btn" id="btnAddImage" title="Imagem"><i data-lucide="image"></i></button>
         </div>
 
@@ -59,7 +64,7 @@
                         <option value="layout-bold">7. Brutalista</option>
                     </select>
                 </div>
-                <div class="dock-divider"></div>
+                <div class="divider-v"></div>
                 <div class="wl-controls">
                     <div class="color-picker-wrap" title="Cor da Marca">
                         <input type="color" id="brandColor" value="#ea580c">
@@ -76,10 +81,10 @@
                     <input type="file" id="logoInput" accept="image/*" hidden>
                     <input type="file" id="slideImageInput" accept="image/*" hidden>
                 </div>
-                <div class="dock-divider"></div>
+                <div class="divider-v"></div>
                 <div class="action-buttons">
                     <button id="btnGenerate" class="btn-primary">
-                        <span id="btnGenText">Gerar IA</span>
+                        <span id="btnGenText">Gerar</span>
                     </button>
                     <button id="btnDownload" class="btn-download" style="display: none;">
                         <i data-lucide="download"></i> Exportar
@@ -109,9 +114,20 @@
         </div>
 
         <!-- MODAIS E TOOLBARS FLUTUANTES -->
-        <div id="imageToolbar" class="image-toolbar" style="display: none;">
-            <button id="btnToolbarChange" class="toolbar-btn"><i data-lucide="image-plus"></i> Alterar</button>
-            <div id="btnToolbarMove" class="toolbar-btn"><i data-lucide="move"></i> Mover</div>
+        <div id="elementToolbar" class="element-toolbar" style="display: none;">
+            <button id="btnToolbarChange" class="toolbar-btn" title="Alterar Imagem"><i data-lucide="image-plus"></i></button>
+            <div class="divider-v" id="divImageChange" style="display: none;"></div>
+            
+            <button id="btnToolbarLayerUp" class="toolbar-btn" title="Trazer para Frente"><i data-lucide="arrow-up-to-line"></i></button>
+            <button id="btnToolbarLayerDown" class="toolbar-btn" title="Enviar para Trás"><i data-lucide="arrow-down-to-line"></i></button>
+            <div class="divider-v"></div>
+            
+            <button id="btnToolbarOpacityDown" class="toolbar-btn" title="Diminuir Transparência">- <i data-lucide="blend" style="width:14px;"></i></button>
+            <button id="btnToolbarOpacityUp" class="toolbar-btn" title="Aumentar Transparência">+ <i data-lucide="blend" style="width:14px;"></i></button>
+            <div class="divider-v"></div>
+
+            <button id="btnToolbarDelete" class="toolbar-btn" title="Excluir"><i data-lucide="trash-2" style="color: #ff3b30;"></i></button>
+            <div id="btnToolbarMove" class="toolbar-btn" title="Mover"><i data-lucide="move"></i></div>
         </div>
 
         <div id="cropModal" class="crop-modal-overlay">
@@ -126,10 +142,25 @@
                 </div>
             </div>
         </div>
-    </div>
+
+        <!-- NOVO: MODAL DE EXPORTAÇÃO -->
+        <div id="exportModal" class="export-modal-overlay">
+            <div class="export-modal-content">
+                <i data-lucide="loader-2" class="spin"></i>
+                <h3>Exportando seus slides</h3>
+                <p>Renderizando em altíssima qualidade (4K)...</p>
+                <div class="progress-bar-container">
+                    <div id="exportProgressBar" class="progress-bar"></div>
+                </div>
+            </div>
+        </div>
+        
+    </div> <!-- Fim do .app-layout -->
 
     <!-- Script alterado para type module -->
     <script type="module" src="js/main.js"></script>
     <script>lucide.createIcons();</script>
+</body>
+</html>
 </body>
 </html>
