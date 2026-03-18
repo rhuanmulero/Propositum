@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propositum | Dashboard</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #000000; --text: #ffffff; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh; overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Noise Textura */
+        .noise {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 9999; opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Navbar Blur Apple */
+        nav {
+            position: fixed; top: 0; width: 100%;
+            background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px 60px; display: flex; justify-content: space-between; align-items: center;
+            z-index: 100;
+        }
+
+        nav h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.05em; text-transform: uppercase; }
+
+        .btn-nav {
+            background: #ffffff; color: #000000; border: none;
+            padding: 10px 24px; border-radius: 100px;
+            font-size: 13px; font-weight: 700; cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-nav:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.2); }
+
+        /* Workspace Grid */
+        main { padding: 140px 60px 60px 60px; max-width: 1600px; margin: 0 auto; position: relative; z-index: 10; }
+        
+        .header-title {
+            font-size: 64px; font-weight: 800; letter-spacing: -0.04em;
+            margin-bottom: 60px;
+            background: linear-gradient(180deg, #ffffff 0%, #555555 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 30px;
+            opacity: 0; transform: translateY(20px);
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; animation-delay: 0.2s;
+        }
+
+        /* O CARTÃO MÁGICO (Hover Glow Effect) */
+        .card {
+            background-color: rgba(20, 20, 20, 0.4);
+            border-radius: 24px;
+            padding: 2px; /* Espaço para a borda brilhante */
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .card::before {
+            content: ""; position: absolute; inset: 0; border-radius: 24px;
+            background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.3), transparent 40%);
+            opacity: 0; transition: opacity 0.3s; z-index: 1;
+        }
+
+        .card:hover::before { opacity: 1; }
+        .card:hover { transform: translateY(-8px); }
+
+        .card-content {
+            background-color: #0a0a0a; border-radius: 22px;
+            padding: 40px; height: 100%; position: relative; z-index: 2;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        .card-content h3 { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px; }
+        .card-content p { color: #888; font-size: 15px; line-height: 1.6; margin-bottom: 40px; }
+        
+        .card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;
+        }
+
+        .card-footer span { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #fff; }
+
+        /* Modal Ultra Clean */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 1000; opacity: 0; transition: 0.4s;
+        }
+
+        .modal-overlay.active { display: flex; opacity: 1; }
+
+        .modal-content {
+            background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 32px; width: 100%; max-width: 600px; padding: 50px;
+            transform: scale(0.95) translateY(20px); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+        }
+
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .modal-header h2 { font-size: 32px; font-weight: 800; letter-spacing: -0.04em; }
+        .btn-close { background: none; border: none; color: #888; cursor: pointer; transition: 0.2s; }
+        .btn-close:hover { color: #fff; transform: rotate(90deg); }
+
+        .input-dark {
+            width: 100%; background: #141414; border: 1px solid rgba(255,255,255,0.05);
+            color: #fff; padding: 20px; border-radius: 16px; font-size: 16px; font-family: 'Inter';
+            margin-bottom: 24px; outline: none; transition: 0.3s;
+        }
+        .input-dark:focus { background: #1a1a1a; border-color: rgba(255,255,255,0.3); }
+
+        .btn-submit {
+            width: 100%; background: #fff; color: #000; border: none; padding: 20px;
+            border-radius: 16px; font-size: 16px; font-weight: 800; cursor: pointer;
+            transition: 0.3s; margin-top: 10px;
+        }
+        .btn-submit:hover { transform: scale(0.98); background: #e0e0e0; }
+
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="noise"></div>
+
+    <nav>
+        <h2>Propositum</h2>
+        <button class="btn-nav" onclick="openModal()">Nova Marca</button>
+    </nav>
+
+    <main>
+        <h1 class="header-title">Seu Workspace.</h1>
+
+        <div class="cards-grid" id="cardsContainer">
+            <!-- Os cartões precisam da classe 'card' para o efeito mágico funcionar -->
+            
+            <div class="card" onclick="window.location.href='editor.html'">
+                <div class="card-content">
+                    <div>
+                        <h3>Alpha Labs</h3>
+                        <p>Visão técnica e disruptiva. Foco extremo em IA e engenharia de dados. Tom de voz frio, analítico e vanguardista.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span>Acessar Studio &rarr;</span>
+                        <i data-lucide="cpu" style="color: #fff; width: 24px;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" onclick="window.location.href='editor.html'">
+                <div class="card-content">
+                    <div>
+                        <h3>Noir Studio</h3>
+                        <p>Agência de design focada no mercado de luxo. Comunicação baseada em gatilhos de exclusividade e poucas palavras.</p>
+                    </div>
+                    <div class="card-footer">
+                        <span>Acessar Studio &rarr;</span>
+                        <i data-lucide="aperture" style="color: #fff; width: 24px;"></i>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal Adicionar Marca -->
+    <div class="modal-overlay" id="brandModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Entidade</h2>
+                <button class="btn-close" onclick="closeModal()"><i data-lucide="x" style="width: 32px; height: 32px;"></i></button>
+            </div>
+
+            <input type="text" class="input-dark" placeholder="Nome da Startup (Ex: Acme Corp)">
+            <textarea class="input-dark" rows="4" placeholder="Visão e Diretrizes da IA (Ex: Comunique-se como uma marca de luxo suíça. Seja seco, direto e elitista.)"></textarea>
+
+            <button class="btn-submit" onclick="closeModal()">Inicializar Marca</button>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // MÁGICA DO HOVER (Efeito Vercel / Linear Glow)
+        document.getElementById("cardsContainer").onmousemove = e => {
+            for(const card of document.getElementsByClassName("card")) {
+                const rect = card.getBoundingClientRect(),
+                      x = e.clientX - rect.left,
+                      y = e.clientY - rect.top;
+                card.style.setProperty("--mouse-x", `${x}px`);
+                card.style.setProperty("--mouse-y", `${y}px`);
+            };
+        }
+
+        // Controle do Modal
+        function openModal() {
+            const modal = document.getElementById('brandModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('brandModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 400); 
+        }
+    </script>
+</body>
+</html>

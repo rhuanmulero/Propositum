@@ -3,168 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Propositum | Studio</title>
-    <link rel="stylesheet" href="css/main.css">
-    
-    <!-- Adicionado crossorigin="anonymous" para permitir a exportação -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet" crossorigin="anonymous">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Propositum | O Studio Épico</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #000000;
+            --text-main: #ffffff;
+            --text-muted: #888888;
+        }
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" crossorigin="anonymous"></script>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+            perspective: 1000px;
+        }
+
+        /* 1. Ruído Cinematográfico */
+        .noise {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 50; opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* 2. Luz Eterea no Fundo (Glow) */
+        .ambient-light {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70vw; height: 70vw;
+            background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 60%);
+            filter: blur(100px);
+            z-index: 0;
+            animation: pulseLight 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulseLight {
+            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+            100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+        }
+
+        /* Container Principal */
+        .hero-container {
+            position: relative; z-index: 10;
+            text-align: center;
+            max-width: 1200px;
+            padding: 0 20px;
+        }
+
+        /* 3. Tipografia Metálica Absurda */
+        .title-mask { overflow: hidden; padding-bottom: 10px; }
+        
+        h1 {
+            font-size: clamp(60px, 12vw, 150px);
+            font-weight: 900;
+            letter-spacing: -0.06em;
+            line-height: 0.9;
+            background: linear-gradient(180deg, #ffffff 0%, #555555 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transform: translateY(100%);
+            animation: revealUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        p {
+            font-size: clamp(18px, 2vw, 28px);
+            font-weight: 400;
+            color: var(--text-muted);
+            letter-spacing: -0.02em;
+            margin-top: 30px;
+            margin-bottom: 60px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+        }
+
+        /* Botão Premium */
+        .btn-wrapper {
+            opacity: 0; transform: translateY(20px);
+            animation: fadeUp 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+        }
+
+        .btn-epic {
+            position: relative;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 20px 48px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 100px;
+            color: #fff;
+            font-size: 16px; font-weight: 600; letter-spacing: 0.5px;
+            text-decoration: none; text-transform: uppercase;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-epic::before {
+            content: ''; position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-epic:hover {
+            background: #fff; color: #000;
+            transform: scale(1.05) translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255,255,255,0.15);
+        }
+
+        .btn-epic:hover::before { left: 100%; }
+
+        /* Animações Core */
+        @keyframes revealUp { to { transform: translateY(0); } }
+        @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
-    
-    <div class="app-layout">
-        
-        <!-- FIGMA LIKE TOOLBAR (Esquerda Vertical) -->
-        <div class="figma-toolbar">
-            <button class="tool-btn active" data-tool="pointer" title="Mover (V)"><i data-lucide="mouse-pointer-2"></i></button>
-            <button class="tool-btn" data-tool="hand" title="Mão / Navegar (H / Espaço)"><i data-lucide="hand"></i></button>
-            <div class="divider-h"></div>
-            <button class="tool-btn" id="btnAddText" title="Texto (T)"><i data-lucide="type"></i></button>
-            <button class="tool-btn" id="btnAddRect" title="Retângulo (R)"><i data-lucide="square"></i></button>
-            <button class="tool-btn" id="btnAddCircle" title="Círculo (O)"><i data-lucide="circle"></i></button>
-            <div class="divider-h"></div>
-            <button class="tool-btn" id="btnAddCard" title="Adicionar Card"><i data-lucide="layout"></i></button>
-            <button class="tool-btn" id="btnAddButton" title="Adicionar Botão"><i data-lucide="mouse-pointer-click"></i></button>
-            <button class="tool-btn" id="btnAddBadge" title="Adicionar Tag/Badge"><i data-lucide="tag"></i></button>
-            <div class="divider-h"></div>
-            <button class="tool-btn" id="btnAddImage" title="Imagem"><i data-lucide="image"></i></button>
+    <div class="noise"></div>
+    <div class="ambient-light"></div>
+
+    <div class="hero-container">
+        <div class="title-mask">
+            <h1>PROPOSITUM</h1>
         </div>
-
-        <!-- CONFIGURAÇÕES GLOBAIS (Topo Centro/Direita) -->
-        <header class="floating-dock">
-            <div class="dock-header">
-                <h2>Propositum</h2>
-            </div>
-            <div class="dock-controls">
-                <div class="input-wrap">
-                    <i data-lucide="key" class="dock-icon"></i>
-                    <input type="password" id="apiKeyInput" placeholder="Gemini API">
-                </div>
-                <div class="input-wrap">
-                    <i data-lucide="sparkles" class="dock-icon"></i>
-                    <input type="text" id="themeInput" placeholder="Tema (Ex: Gestão)">
-                </div>
-                <div class="input-wrap">
-                    <i data-lucide="link" class="dock-icon"></i>
-                    <input type="text" id="websiteInput" placeholder="seusite.com.br">
-                </div>
-                <div class="input-wrap select-group">
-                    <i data-lucide="layout-template" class="dock-icon"></i>
-                    <select id="templateSelect">
-                        <option value="layout-tech">1. Tech/Ícones</option>
-                        <option value="layout-corp">2. Blocos/Notícia</option>
-                        <option value="layout-minimal">3. Minimalista</option>
-                        <option value="layout-neon">4. Cyber/Neon</option>
-                        <option value="layout-editorial">5. Editorial</option>
-                        <option value="layout-glass">6. Glassmorphism</option>
-                        <option value="layout-bold">7. Brutalista</option>
-                    </select>
-                </div>
-                <div class="divider-v"></div>
-                <div class="wl-controls">
-                    <div class="color-picker-wrap" title="Cor da Marca">
-                        <input type="color" id="brandColor" value="#ea580c">
-                    </div>
-                    <div class="color-picker-wrap" title="Cor de Fundo">
-                        <input type="color" id="bgColor" value="#081225">
-                    </div>
-                    <div class="color-picker-wrap" title="Cor do Texto">
-                        <input type="color" id="textColor" value="#ffffff">
-                    </div>
-                    <button id="btnLogoUpload" class="btn-icon-minimal" title="Inserir Logo">
-                        <i data-lucide="image-plus"></i>
-                    </button>
-                    <input type="file" id="logoInput" accept="image/*" hidden>
-                    <input type="file" id="slideImageInput" accept="image/*" hidden>
-                </div>
-                <div class="divider-v"></div>
-                <div class="action-buttons">
-                    <button id="btnGenerate" class="btn-primary">
-                        <span id="btnGenText">Gerar</span>
-                    </button>
-                    <button id="btnDownload" class="btn-download" style="display: none;">
-                        <i data-lucide="download"></i> Exportar
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- ÁREA DE TRABALHO (CANVAS INFINITO) -->
-        <main class="workspace" id="workspace">
-            <div id="canvasPlane" class="canvas-plane">
-                <div id="carouselContainer" class="carousel-container">
-                    <div class="empty-state">
-                        <div class="empty-icon"><i data-lucide="layers" style="width: 64px; height: 64px;"></i></div>
-                        <h2>Propositum 1080x1350</h2>
-                        <p>Ajuste sua marca no painel superior e clique em gerar.</p>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- CONTROLE DE ZOOM (Figma Like) -->
-        <div class="zoom-controls">
-            <button id="btnZoomOut"><i data-lucide="minus"></i></button>
-            <span id="zoomLevel">40%</span>
-            <button id="btnZoomIn"><i data-lucide="plus"></i></button>
+        <p>A inteligência visual que materializa o épico.</p>
+        <div class="btn-wrapper">
+            <a href="dashboard.html" class="btn-epic">Acessar o Studio</a>
         </div>
-
-        <!-- MODAIS E TOOLBARS FLUTUANTES -->
-        <div id="elementToolbar" class="element-toolbar" style="display: none;">
-            <button id="btnToolbarChange" class="toolbar-btn" title="Alterar Imagem"><i data-lucide="image-plus"></i></button>
-            <div class="divider-v" id="divImageChange" style="display: none;"></div>
-            
-            <button id="btnToolbarLayerUp" class="toolbar-btn" title="Trazer para Frente"><i data-lucide="arrow-up-to-line"></i></button>
-            <button id="btnToolbarLayerDown" class="toolbar-btn" title="Enviar para Trás"><i data-lucide="arrow-down-to-line"></i></button>
-            <div class="divider-v"></div>
-            
-            <button id="btnToolbarOpacityDown" class="toolbar-btn" title="Diminuir Transparência">- <i data-lucide="blend" style="width:14px;"></i></button>
-            <button id="btnToolbarOpacityUp" class="toolbar-btn" title="Aumentar Transparência">+ <i data-lucide="blend" style="width:14px;"></i></button>
-            <div class="divider-v"></div>
-
-            <button id="btnToolbarDelete" class="toolbar-btn" title="Excluir"><i data-lucide="trash-2" style="color: #ff3b30;"></i></button>
-            <div id="btnToolbarMove" class="toolbar-btn" title="Mover"><i data-lucide="move"></i></div>
-        </div>
-
-        <div id="cropModal" class="crop-modal-overlay">
-            <div class="crop-modal">
-                <h3>Ajustar Imagem</h3>
-                <div class="crop-workspace">
-                    <img id="cropTarget" src="">
-                </div>
-                <div class="crop-actions">
-                    <button id="btnCancelCrop" class="btn-secondary">Cancelar</button>
-                    <button id="btnApplyCrop" class="btn-primary">Aplicar Corte</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- NOVO: MODAL DE EXPORTAÇÃO -->
-        <div id="exportModal" class="export-modal-overlay">
-            <div class="export-modal-content">
-                <i data-lucide="loader-2" class="spin"></i>
-                <h3>Exportando seus slides</h3>
-                <p>Renderizando em altíssima qualidade (4K)...</p>
-                <div class="progress-bar-container">
-                    <div id="exportProgressBar" class="progress-bar"></div>
-                </div>
-            </div>
-        </div>
-        
-    </div> <!-- Fim do .app-layout -->
-
-    <!-- Script alterado para type module -->
-    <script type="module" src="js/main.js"></script>
-    <script>lucide.createIcons();</script>
-</body>
-</html>
+    </div>
 </body>
 </html>
