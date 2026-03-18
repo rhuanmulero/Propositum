@@ -364,3 +364,44 @@ button.btn-secondary:hover { background: #d1d1d6; }
     pointer-events: none;
     mix-blend-mode: overlay;
 }
+
+/* Botão de Salvar Estilo Studio Pro */
+.btn-studio-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03); /* Quase invisível */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #888;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+}
+
+.btn-studio-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.btn-studio-secondary:active {
+    transform: scale(0.95); /* Feedback de clique Apple */
+}
+
+/* Estado de Sucesso ao salvar */
+.btn-studio-secondary.saved {
+    border-color: #34c759; /* Verde Apple */
+    color: #34c759;
+    background: rgba(52, 199, 89, 0.1);
+}
+
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}

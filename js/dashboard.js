@@ -49,7 +49,7 @@ function renderProfiles() {
                         </div>
                         <p>${prof.vision || 'Nenhuma diretriz de Inteligência Artificial definida para esta marca.'}</p>
                     </div>
-                    <div class="card-footer" onclick="goToEditor('${prof.id}')">
+                    <div class="card-footer" onclick="goToEntity('${prof.id}')">
                         <span>Acessar Studio</span>
                         <i data-lucide="arrow-right" style="width: 20px;"></i>
                     </div>
@@ -228,7 +228,7 @@ function confirmDeleteProfile() {
 }
 
 /* --- TRANSIÇÃO PARA O STUDIO --- */
-function goToEditor(id) {
+function goToEntity(id) {
     const prof = profiles.find(p => p.id === id);
     if(!prof) return;
 
@@ -236,16 +236,16 @@ function goToEditor(id) {
     const transitionText = document.getElementById('transitionText');
     
     if (transition && transitionText) {
-        transitionText.innerText = `Sincronizando ${prof.name}...`;
+        transitionText.innerText = `Acessando inteligência de ${prof.name}...`;
         transition.style.display = 'flex';
         setTimeout(() => transition.classList.add('active'), 10);
 
         setTimeout(() => {
-            window.location.href = `editor.html?startupId=${id}`;
+            // MUDOU AQUI: Agora vai para entity.html
+            window.location.href = `entity.html?startupId=${id}`;
         }, 1500);
     } else {
-        // Fallback caso a tela de transição não exista no HTML
-        window.location.href = `editor.html?startupId=${id}`;
+        window.location.href = `entity.html?startupId=${id}`;
     }
 }
 

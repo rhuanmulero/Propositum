@@ -198,3 +198,95 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
 });
 
 document.getElementById('btnDownload').addEventListener('click', downloadCarousel);
+
+// ==========================================
+// SISTEMA DE RASCUNHOS (SAVE & LOAD)
+// ==========================================
+
+// Variáveis para saber se estamos editando um rascunho existente
+const draftIdParam = urlParams.get('draftId');
+let currentDraftId = draftIdParam || null;
+
+// Lógica para Salvar Rascunho
+document.getElementById('btnSaveDraft').addEventListener('click', async () => {
+    if (!AppState.activeProfile) {
+        alert("Erro: Nenhuma marca selecionada.");
+        return;
+    }
+
+    const btn = document.getElementById('btnSaveDraft');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Salvando...';
+
+    // Pega o HTML do container inteiro de slides
+    const containerHTML = document.getElementById('carouselContainer').innerHTML;
+
+    // Tenta gerar um thumbnail (foto) do primeiro slide usando a biblioteca html-to-image
+    let previewBase64 = null;
+    const firstSlide = document.querySelector('.slide');
+    if (firstSlide) {
+        try {
+            // Tira print rápido em qualidade baixa só para a vitrine
+            previewBase64 = await window.htmlToImage.toPng(firstSlide, { pixelRatio: 0.5 }); 
+        } catch (e) {
+            console.log("Erro ao gerar capa, salvando sem capa.", e);
+        }
+    }
+
+    // Tenta pegar o título do H1 do primeiro slide para nomear o rascunho
+    const firstH1 = document.querySelector('.slide h1');
+    const draftTitle = firstH1 ? firstH1.innerText : 'Carrossel ' + new Date().toLocaleTimeString();
+
+    // Cria o Objeto do Rascunho
+    const draftData = {
+        id: currentDraftId || 'draft_' + Date.now(),
+        entityId: AppState.activeProfile.id,
+        title: draftTitle,
+        htmlContent: containerHTML,
+        previewImg: previewBase64,
+        lastEdited: new Date().toISOString(),
+        status: "Rascunho"
+    };
+
+    // Puxa o banco de rascunhos
+    let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+
+    if (currentDraftId) {
+        // Atualiza o existente
+        const index = drafts.findIndex(d => d.id === currentDraftId);
+        if (index > -1) drafts[index] = draftData;
+        else drafts.push(draftData);
+    } else {
+        // Cria um novo
+        drafts.push(draftData);
+        currentDraftId = draftData.id; // Atualiza o ID atual
+        // Atualiza a URL discretamente para o usuário continuar editando
+        window.history.replaceState({}, '', `editor.html?startupId=${AppState.activeProfile.id}&draftId=${currentDraftId}`);
+    }
+
+    localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+
+    // Feedback visual
+    btn.innerHTML = '<i data-lucide="check"></i> Salvo!';
+    setTimeout(() => { btn.innerHTML = originalText; lucide.createIcons(); }, 2000);
+});
+
+// Lógica para CARREGAR Rascunho (Quando abre a página)
+if (draftIdParam) {
+    const drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+    const loadedDraft = drafts.find(d => d.id === draftIdParam);
+
+    if (loadedDraft) {
+        // Injeta o HTML salvo de volta na tela
+        document.getElementById('carouselContainer').innerHTML = loadedDraft.htmlContent;
+        
+        // Ativa o botão de exportar
+        document.getElementById('btnDownload').style.display = 'flex';
+        
+        // Restaura o state history (para o Undo/Redo não quebrar)
+        AppState.history =[loadedDraft.htmlContent];
+        AppState.historyIndex = 0;
+        
+        console.log("Rascunho carregado com sucesso!");
+    }
+}
