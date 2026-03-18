@@ -26,16 +26,58 @@ body[data-tool="pointer"] .editable-img:hover { outline: 4px dashed var(--brand-
 .slide-wrapper { position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 4px; transition: outline 0.2s; }
 .slide-wrapper.active { outline: 6px solid #0071e3; outline-offset: 10px; z-index: 10; }
 
-.slide { width: 1080px; height: 1350px; position: relative; overflow: hidden; display: flex; flex-direction: column; background-color: var(--bg-color); color: var(--text-color); }
-.slide::after {
-    content: '';
+.slide {
+    width: 1080px;
+    height: 1350px;
+    position: relative;
+    overflow: hidden; /* Garante que nada vaze no design final */
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+/* NOVA CAMADA DE TEXTURA REAL */
+.slide-overlay-texture {
     position: absolute;
     inset: 0;
-    z-index: 9998; /* Fica acima de quase tudo, unificando o visual */
-    pointer-events: none; /* Deixa os cliques passarem direto por ele */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    opacity: 0.05; /* Muito sutil, apenas para dar aquele charme orgânico */
-    mix-blend-mode: overlay; /* Mistura as cores em vez de apenas jogar cinza por cima */
+    z-index: 9999;
+    pointer-events: none;
+    /* Noise de alta compatibilidade + Dots */
+    background-image: 
+        url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyAMAAAA9Uc+uAAAABlBMVEUAAAD///+l2Z/dAAAANUlEQVQ4y2NgGAWjYBSMglEwCkbBSAcMAEEAAUAAUAAMAAFAADAAFAADAAFAADAAFAADQAAL9gB/6fP66gAAAABJRU5ErkJggg=="),
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 100px 100px, 30px 30px;
+    opacity: 0.15;
+    mix-blend-mode: overlay;
+}
+
+/* FIX PARA O SLIDE DE PROCESSO (NÚMEROS CORTADOS) */
+.layout-tech.slide-process .step-card {
+    margin-top: 30px; /* Dá espaço para o número não ser cortado no topo */
+    border: 1px solid rgba(var(--text-rgb), 0.1);
+    background: rgba(var(--text-rgb), 0.02);
+    padding: 45px 30px 30px 30px;
+    border-radius: 24px;
+    position: relative;
+}
+
+.layout-tech.slide-process .step-num {
+    position: absolute;
+    top: -30px; /* Ajustado para alinhar com o novo margin */
+    left: 30px;
+    background: var(--brand-color);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 900;
+    font-size: 24px;
+    color: white;
+    box-shadow: 0 10px 20px rgba(var(--brand-rgb), 0.3);
+    z-index: 10;
 }
 
 .noise-overlay {
@@ -280,4 +322,45 @@ button.btn-secondary:hover { background: #d1d1d6; }
 
 .export-modal-overlay.show .export-modal-content {
     transform: scale(1) translateY(0);
+}
+
+/* FIX PARA O SLIDE DE PROCESSO */
+.process-container {
+    width: 100%;
+    padding-top: 50px; /* ABRE ESPAÇO PARA OS NÚMEROS NÃO SEREM CORTADOS */
+    margin-bottom: 20px;
+}
+
+.layout-tech.slide-process .step-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 40px 25px 25px 25px;
+    position: relative;
+}
+
+.layout-tech.slide-process .step-num {
+    position: absolute;
+    top: -30px; /* Flutua no espaço criado pelo padding do container */
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--brand-color);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 900;
+    font-size: 24px;
+    color: white;
+}
+
+/* TEXTURA FÍSICA */
+.slide-texture-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    mix-blend-mode: overlay;
 }

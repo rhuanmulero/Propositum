@@ -16,7 +16,9 @@ const getIcon = (idx) => {
     return `<i data-lucide="${iconNames[idx % iconNames.length]}" style="width: 32px; height: 32px; color: currentColor;"></i>`;
 };
 
+// ==========================================
 // ESTRUTURA A: TECH, MINIMAL, NEON, GLASS
+// ==========================================
 function buildStructureA(slide) {
     let bgHtml = ''; 
     let contentHtml = '';
@@ -50,9 +52,12 @@ function buildStructureA(slide) {
                 <h3 contenteditable="true">${i.title}</h3>
                 <p contenteditable="true">${i.desc}</p>
             </div>`).join('');
+        // FIX: 'process-container' com padding superior para o número flutuante não ser cortado
         contentHtml = `
-            <h2 class="draggable" contenteditable="true" style="margin-bottom: 40px;">${slide.title}</h2>
-            <div class="grid">${steps}</div>
+            <h2 class="draggable" contenteditable="true" style="margin-bottom: 20px;">${slide.title}</h2>
+            <div class="process-container">
+                <div class="grid">${steps}</div>
+            </div>
             <p class="process-footer draggable" contenteditable="true">${slide.footerText || ''}</p>`;
     } 
     else if (slide.type === 'cta') {
@@ -66,7 +71,9 @@ function buildStructureA(slide) {
     return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
 }
 
+// ==========================================
 // ESTRUTURA B: CORPORATE, NEWS, EDITORIAL, BOLD
+// ==========================================
 function buildStructureB(slide) {
     let bgHtml = ''; 
     let contentHtml = '';
@@ -78,8 +85,8 @@ function buildStructureB(slide) {
             <div class="tag draggable" contenteditable="true">${slide.tag}</div>
             <h1 class="draggable" contenteditable="true">${slide.title}</h1>`;
     } 
-    else if (slide.type === 'news') {
-        const bullets = (slide.bullets || []).map(b => `<li class="draggable" contenteditable="true">${b}</li>`).join('');
+    else if (slide.type === 'news' || slide.type === 'process') { // News ou Process (News adaptado)
+        const bullets = (slide.bullets || (slide.items ? slide.items.map(i => i.title) : [])).map(b => `<li class="draggable" contenteditable="true">${b}</li>`).join('');
         contentHtml = `
             <div class="browser draggable">
                 <div class="browser-header">
@@ -87,8 +94,8 @@ function buildStructureB(slide) {
                     <span class="brand" contenteditable="true">NEWS <span>HUB</span></span>
                     <span><i data-lucide="user" style="width:16px;"></i></span>
                 </div>
-                <div class="headline" contenteditable="true">${slide.newsHeadline}</div>
-                <div class="subheadline" contenteditable="true">${slide.newsSub}</div>
+                <div class="headline" contenteditable="true">${slide.newsHeadline || slide.title}</div>
+                <div class="subheadline" contenteditable="true">${slide.newsSub || 'Últimas atualizações do setor'}</div>
             </div>
             <h2 class="draggable" contenteditable="true">${slide.title}</h2>
             <ul class="news-bullets">${bullets}</ul>`;
@@ -114,6 +121,9 @@ function buildStructureB(slide) {
     return bgHtml + `<div class="slide-content">${contentHtml}</div>`;
 }
 
+// ==========================================
+// RENDERIZADOR PRINCIPAL
+// ==========================================
 export function renderCarousel(data, template) {
     const container = document.getElementById('carouselContainer');
     container.innerHTML = '';
@@ -128,15 +138,15 @@ export function renderCarousel(data, template) {
         const slideDiv = document.createElement('div');
         slideDiv.className = `slide ${template} slide-${slide.type}`;
 
-        // Constrói o HTML base
+        // Constrói o conteúdo baseado no template escolhido
         let slideHTML = isStructureA ? buildStructureA(slide) : buildStructureB(slide);
         
-        // Logo Customizado ou Padrão
+        // Configuração da Logo
         const logoContent = AppState.customLogoUrl 
             ? `<img src="${AppState.customLogoUrl}" class="custom-logo-img draggable">` 
             : `<span class="default-logo-text draggable" contenteditable="true">Sua Marca</span>`;
 
-        // Rodapés Estilizados
+        // Rodapés Premium
         let footerHtml = isStructureA ? `
             <div class="slide-footer footer-tech">
                 <div class="brand-logo-container">${logoContent}</div>
@@ -150,25 +160,32 @@ export function renderCarousel(data, template) {
             </div>
         `;
 
-        // Guias de Alinhamento (Ficam ocultas)
+        // Guias de Alinhamento Ocultas
         const guidesHtml = `
             <div class="guide-line guide-v"></div>
             <div class="guide-line guide-h"></div>
         `;
 
-        // CAMADA DE TEXTURA REAL (Injetada como elemento do DOM para sair no export)
-        const textureHtml = `<div class="slide-overlay-texture"></div>`;
+        // CAMADA DE TEXTURA FÍSICA (Resolve o problema do Grain e Dots sumirem no export)
+        const textureHtml = `
+            <svg class="slide-texture-canvas" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="position:absolute; inset:0; z-index:9998; pointer-events:none; opacity:0.08; mix-blend-mode:overlay;">
+                <filter id="noise${index}"><feTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/></filter>
+                <rect width="100%" height="100%" filter="url(#noise${index})" />
+                <pattern id="dots${index}" x="0" y="0" width="30" height="30" patternUnits="userSpaceOnUse">
+                    <circle cx="2" cy="2" r="1" fill="white" opacity="0.2" />
+                </pattern>
+                <rect width="100%" height="100%" fill="url(#dots${index})" />
+            </svg>`;
 
         slideDiv.innerHTML = slideHTML + footerHtml + guidesHtml + textureHtml;
         wrapper.appendChild(slideDiv);
         container.appendChild(wrapper);
     });
 
-    // Inicializa ícones e botões
     window.lucide.createIcons();
     document.getElementById('btnDownload').style.display = 'flex';
     
-    // Reseta e salva o estado inicial no histórico para o Ctrl+Z
+    // Reseta histórico e salva estado inicial
     AppState.history = [];
     AppState.historyIndex = -1;
     saveState();
