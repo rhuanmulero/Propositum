@@ -39,12 +39,18 @@ export function getMockData(template, topic) {
     }
 }
 
-export async function fetchGeminiData(theme, template, apiKey) {
+export async function fetchGeminiData(theme, template, apiKey, activeProfile) {
     const isStructureA = ['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
-    const promptTech = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}]},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}],"footerText":"Rodapé"},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
-    const promptCorp = `Retorne APENAS JSON. Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    let brandContext = "";
+    if (activeProfile && activeProfile.vision) {
+        brandContext = `IMPORTANTE: Aja como a marca "${activeProfile.name}". Tom de voz e diretrizes: "${activeProfile.vision}". Crie os textos refletindo essa personalidade rigorosamente. `;
+    }
+
+    const promptTech = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}]},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}],"footerText":"Rodapé"},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    
+    const promptCorp = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
 
     try {
         const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });

@@ -11,5 +11,7 @@ export const AppState = {
 
     history:[],
     historyIndex: -1,
-    isUndoRedo: false
+    isUndoRedo: false,
+
+    activeProfile: null 
 };

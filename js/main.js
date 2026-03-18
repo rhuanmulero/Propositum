@@ -6,6 +6,36 @@ import { initEditorEvents } from './modules/editor.js';
 import { initDragAndDropEvents } from './modules/dragDrop.js';
 import { downloadCarousel } from './modules/export.js';
 
+const urlParams = new URLSearchParams(window.location.search);
+const startupId = urlParams.get('startupId');
+
+if (startupId) {
+    const profiles = JSON.parse(localStorage.getItem('propositum_profiles')) ||[];
+    const activeProfile = profiles.find(p => p.id === startupId);
+
+    if (activeProfile) {
+        // 1. Salva no estado global
+        AppState.activeProfile = activeProfile;
+        AppState.customLogoUrl = activeProfile.logoBase64 || null;
+
+        // 2. Atualiza a Interface do Editor com os dados dela
+        document.getElementById('websiteInput').value = activeProfile.website || '';
+        document.getElementById('templateSelect').value = activeProfile.defaultTemplate || 'layout-tech';
+        
+        // 3. Aplica as Cores Exatas da Marca
+        updateColors(
+            activeProfile.bgColor || '#000000', 
+            activeProfile.brandColor || '#ffffff', 
+            activeProfile.textColor || '#ffffff'
+        );
+
+        // 4. Marca o botão de logo como OK (se houver logo)
+        if (activeProfile.logoBase64) {
+            document.getElementById('btnLogoUpload').innerHTML = '<i data-lucide="check" style="color:var(--brand-color);"></i>';
+        }
+    }
+}
+
 // Inicializa Eventos Globales
 initEditorEvents();
 initDragAndDropEvents();
@@ -152,7 +182,7 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
             const data = getMockData(template, themeStr);
             renderCarousel(data, template);
         } else {
-            const aiData = await fetchGeminiData(themeStr, template, apiKey);
+            const aiData = await fetchGeminiData(themeStr, template, apiKey, AppState.activeProfile);
             if (aiData) renderCarousel(aiData, template);
             else alert("Erro na geração. Verifique a API Key ou aguarde alguns minutos e tente novamente.");
         }

@@ -22,7 +22,7 @@ const getIcon = (idx) => {
 function buildStructureA(slide) {
     let bgHtml = ''; 
     let contentHtml = '';
-    const siteUrl = document.getElementById('websiteInput')?.value.trim() || 'seusite.com.br';
+    const siteUrl = document.getElementById('websiteInput')?.value.trim() || (AppState.activeProfile ? AppState.activeProfile.website : 'seusite.com.br');
 
     if (slide.type === 'cover') {
         bgHtml = `<img src="${getImg()}" class="slide-bg-img editable-img" crossorigin="anonymous"><div class="slide-gradient"></div>`;
@@ -142,9 +142,11 @@ export function renderCarousel(data, template) {
         let slideHTML = isStructureA ? buildStructureA(slide) : buildStructureB(slide);
         
         // Configuração da Logo
+        const brandName = AppState.activeProfile ? AppState.activeProfile.name : "Sua Marca";
+        
         const logoContent = AppState.customLogoUrl 
             ? `<img src="${AppState.customLogoUrl}" class="custom-logo-img draggable">` 
-            : `<span class="default-logo-text draggable" contenteditable="true">Sua Marca</span>`;
+            : `<span class="default-logo-text draggable" contenteditable="true">${brandName}</span>`;
 
         // Rodapés Premium
         let footerHtml = isStructureA ? `
