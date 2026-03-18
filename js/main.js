@@ -177,14 +177,19 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
     btn.disabled = true;
     window.lucide.createIcons();
 
-    try {
+try {
         if (!apiKey) {
             const data = getMockData(template, themeStr);
-            renderCarousel(data, template);
+            renderCarousel(data, template, data.image_category || "office");
         } else {
             const aiData = await fetchGeminiData(themeStr, template, apiKey, AppState.activeProfile);
-            if (aiData) renderCarousel(aiData, template);
-            else alert("Erro na geração. Verifique a API Key ou aguarde alguns minutos e tente novamente.");
+            if (aiData) {
+                // Pega a gaveta escolhida pela IA
+                const category = aiData.image_category || "office";
+                renderCarousel(aiData, template, category);
+            } else {
+                alert("Erro na geração. Verifique a API Key ou aguarde alguns minutos e tente novamente.");
+            }
         }
     } catch (error) {
         console.error("Erro no processo de geração:", error);

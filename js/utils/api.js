@@ -4,6 +4,7 @@ export function getMockData(template, topic) {
     
     if (isStructureA) {
         return {
+            image_category: "technology", 
             slides:[
                 { type: "cover", tag: "NOVA TENDÊNCIA", title: `O Futuro da ${t} já começou` },
                 { type: "features", title: "Decisões baseadas em dados reais.", subtitle: "O sucesso exige ativos estratégicos:", items:[
@@ -22,6 +23,7 @@ export function getMockData(template, topic) {
         };
     } else {
         return {
+            image_category: "office", 
             slides:[
                 { type: "cover", tag: "URGENTE!", title: `Por que investir em ${t} hoje mesmo` },
                 { type: "news", newsHeadline: `Mercado acelera mudanças em 2026`, newsSub: "Empresas aceleram a digitalização diante da pressão por eficiência ininterrupta.", title: "Não há espaço para erros.", bullets:[
@@ -40,7 +42,7 @@ export function getMockData(template, topic) {
 }
 
 export async function fetchGeminiData(theme, template, apiKey, activeProfile) {
-    const isStructureA = ['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
+    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
     let brandContext = "";
@@ -48,9 +50,11 @@ export async function fetchGeminiData(theme, template, apiKey, activeProfile) {
         brandContext = `IMPORTANTE: Aja como a marca "${activeProfile.name}". Tom de voz e diretrizes: "${activeProfile.vision}". Crie os textos refletindo essa personalidade rigorosamente. `;
     }
 
-    const promptTech = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}]},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}],"footerText":"Rodapé"},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    const rule = `"image_category":"Classifique o tema em UMA destas categorias exatas: office, technology, health, fitness, food, realestate, pets, education. Se nenhuma encaixar perfeitamente, retorne office"`;
+
+    const promptTech = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {${rule},"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}]},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}],"footerText":"Rodapé"},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
     
-    const promptCorp = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    const promptCorp = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {${rule},"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
 
     try {
         const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });
