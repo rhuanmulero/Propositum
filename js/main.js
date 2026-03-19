@@ -182,14 +182,20 @@ document.getElementById('btnGenerate').addEventListener('click', async () => {
     btn.disabled = true;
     window.lucide.createIcons();
 
-try {
-        if (!apiKey) {
+    try {
+        if (!apiKey || themeStr === '') {
+            
             const data = getMockData(template, themeStr);
             renderCarousel(data, template, data.image_category || "office");
+            
+            if(themeStr === '' && apiKey) {
+                console.log("Nenhum tema definido. Carrossel gerado com texto de marcação.");
+            }
+
         } else {
+            // Só chama a IA de verdade se tiver Tema + API Key
             const aiData = await fetchGeminiData(themeStr, template, apiKey, AppState.activeProfile);
             if (aiData) {
-                // Pega a gaveta escolhida pela IA
                 const category = aiData.image_category || "office";
                 renderCarousel(aiData, template, category);
             } else {
@@ -200,8 +206,7 @@ try {
         console.error("Erro no processo de geração:", error);
         alert("Ocorreu um erro inesperado ao gerar o carrossel.");
     } finally {
-        // O finally garante que independente do que acontecer (erro ou sucesso), o botão volta ao normal
-        btn.innerHTML = 'Gerar';
+        btn.innerHTML = 'Gerar IA';
         btn.disabled = false;
         window.lucide.createIcons();
     }
@@ -300,6 +305,7 @@ if (draftIdParam) {
                     <button class="btn-slide-control" data-action="add" title="Adicionar Slide Vazio"><i data-lucide="plus"></i></button>
                     <button class="btn-slide-control delete" data-action="remove" title="Remover Slide"><i data-lucide="trash-2"></i></button>
                 `;
+
                 wrapper.appendChild(controlsDiv);
             }
         });

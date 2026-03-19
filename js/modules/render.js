@@ -249,6 +249,7 @@ export function renderCarousel(data, template, topic = "tecnologia") { // <-- To
             <button class="btn-slide-control delete" data-action="remove" title="Remover Slide"><i data-lucide="trash-2"></i></button>
         `;
         
+        wrapper.appendChild(controlsDiv);
         container.appendChild(wrapper);
     });
 
