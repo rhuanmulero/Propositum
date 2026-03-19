@@ -11,7 +11,7 @@ const startupId = urlParams.get('startupId');
 const themeParam = urlParams.get('theme'); 
 
 if (themeParam) {
-    document.getElementById('themeInput').value = decodeURIComponent(themeParam);
+    document.getElementById('themeInput').value = themeParam;
 }
 
 if (startupId) {
