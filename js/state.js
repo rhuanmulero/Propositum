@@ -1,7 +1,7 @@
 export const AppState = {
     customLogoUrl: null,
     targetImageToReplace: null,
-    selectedElement: null,
+    selectedElements:[], 
     activeSlide: null,
     
     currentTool: 'pointer', 

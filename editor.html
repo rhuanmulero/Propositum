@@ -118,33 +118,44 @@
         </div>
 
         <!-- MODAIS E TOOLBARS FLUTUANTES -->
-        <div id="elementToolbar" class="element-toolbar" style="display: none;">
+        <div id="elementToolbar" class="element-toolbar" style="display: none; flex-wrap: wrap; gap: 8px;">
+            
+            <!-- NOVAS FERRAMENTAS DE DESIGN -->
+            <select id="toolbarFont" class="toolbar-btn" style="width: 100px; padding: 4px; outline: none; border: none; background: transparent; font-weight: 600; cursor: pointer;">
+                <option value="'Inter', sans-serif">Inter</option>
+                <option value="'Montserrat', sans-serif">Montserrat</option>
+                <option value="'PT Serif', serif">PT Serif</option>
+                <option value="monospace">Monospace</option>
+            </select>
+
+            <!-- NOVO: Controle de Tamanho da Fonte -->
+            <input type="number" id="toolbarFontSize" class="toolbar-btn" style="width: 60px; padding: 4px; border: none; background: transparent; font-weight: 600; text-align: center; border-left: 1px solid rgba(0,0,0,0.1);" title="Tamanho da Fonte" min="8" max="250">
+            
+            <div style="position:relative; width:26px; height:26px; border-radius:50%; overflow:hidden; border:1px solid rgba(0,0,0,0.1); flex-shrink: 0;">
+                <input type="color" id="toolbarColor" title="Cor do Elemento" style="position:absolute; top:-10px; left:-10px; width:50px; height:50px; cursor:pointer; border: none; padding: 0;">
+            </div>
+            
+            <button id="btnToolbarGradient" class="toolbar-btn" title="Aplicar Gradiente"><i data-lucide="palette"></i></button>
+
+            <div class="divider-v"></div>
+
             <button id="btnToolbarChange" class="toolbar-btn" title="Alterar Imagem"><i data-lucide="image-plus"></i></button>
             <div class="divider-v" id="divImageChange" style="display: none;"></div>
-            
+
             <button id="btnToolbarLayerUp" class="toolbar-btn" title="Trazer para Frente"><i data-lucide="arrow-up-to-line"></i></button>
             <button id="btnToolbarLayerDown" class="toolbar-btn" title="Enviar para Trás"><i data-lucide="arrow-down-to-line"></i></button>
+            
             <div class="divider-v"></div>
             
             <button id="btnToolbarOpacityDown" class="toolbar-btn" title="Diminuir Transparência">- <i data-lucide="blend" style="width:14px;"></i></button>
             <button id="btnToolbarOpacityUp" class="toolbar-btn" title="Aumentar Transparência">+ <i data-lucide="blend" style="width:14px;"></i></button>
+            
             <div class="divider-v"></div>
 
+            <!-- BOTÃO DE DUPLICAR E EXCLUIR -->
+            <button id="btnToolbarCopy" class="toolbar-btn" title="Duplicar Elemento"><i data-lucide="copy"></i></button>
             <button id="btnToolbarDelete" class="toolbar-btn" title="Excluir"><i data-lucide="trash-2" style="color: #ff3b30;"></i></button>
             <div id="btnToolbarMove" class="toolbar-btn" title="Mover"><i data-lucide="move"></i></div>
-        </div>
-
-        <div id="cropModal" class="crop-modal-overlay">
-            <div class="crop-modal">
-                <h3>Ajustar Imagem</h3>
-                <div class="crop-workspace">
-                    <img id="cropTarget" src="">
-                </div>
-                <div class="crop-actions">
-                    <button id="btnCancelCrop" class="btn-secondary">Cancelar</button>
-                    <button id="btnApplyCrop" class="btn-primary">Aplicar Corte</button>
-                </div>
-            </div>
         </div>
 
         <!-- NOVO: MODAL DE EXPORTAÇÃO -->

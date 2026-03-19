@@ -14,13 +14,19 @@ body[data-tool="pointer"] .draggable:active { cursor: grabbing; }[contenteditabl
 .editable-img { transition: filter 0.3s, outline 0.3s; -webkit-user-drag: none; }
 body[data-tool="pointer"] .editable-img:hover { outline: 4px dashed var(--brand-color); outline-offset: -4px; filter: brightness(0.6); }
 
-/* SELECTION BOX */
+/* SELECTION BOX COM REDIMENSIONAMENTO LATERAL */
 .selection-box { position: absolute; border: 2px solid #0071e3; pointer-events: none; z-index: 9999; }
 .resize-handle { position: absolute; width: 12px; height: 12px; background: #fff; border: 2px solid #0071e3; border-radius: 50%; pointer-events: auto; }
+/* Cantos */
 .resize-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
 .resize-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
 .resize-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
 .resize-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+/* Laterais (NOVOS) */
+.resize-handle.l { top: 50%; left: -6px; transform: translateY(-50%); cursor: ew-resize; }
+.resize-handle.r { top: 50%; right: -6px; transform: translateY(-50%); cursor: ew-resize; }
+.resize-handle.t { top: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.resize-handle.b { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
 
 /* BASE DOS SLIDES */
 .slide-wrapper { position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.15); border-radius: 4px; transition: outline 0.2s; }
