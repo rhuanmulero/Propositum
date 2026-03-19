@@ -119,6 +119,24 @@
         </div>
     </div>
 
+    <!-- Modal 4: Confirmação de Exclusão de Entidade -->
+    <div class="modal-overlay" id="deleteConfirmModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="margin-bottom: 24px;">
+                <i data-lucide="alert-triangle" style="width: 56px; height: 56px; color: #ff3b30; margin: 0 auto;"></i>
+            </div>
+            <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px;">Excluir Entidade?</h2>
+            <p style="color: #888; font-size: 15px; line-height: 1.5; margin-bottom: 32px;">
+                Tem certeza que deseja excluir esta marca? Todos os dados associados a ela poderão ser perdidos. Essa ação é irreversível.
+            </p>
+            
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-submit" style="background: #1a1a1a; color: #fff; border: 1px solid rgba(255,255,255,0.1); margin-top: 0;" onclick="closeDeleteConfirm()">Cancelar</button>
+                <button class="btn-submit btn-danger" style="margin-top: 0;" onclick="confirmDeleteProfile()">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Tela de Transição Épica -->
     <div class="transition-overlay" id="transitionOverlay">
         <i data-lucide="loader-2" class="spin" style="width: 48px; height: 48px; color: #fff;"></i>

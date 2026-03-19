@@ -125,6 +125,97 @@ function initResize(e, dir) {
 }
 
 export function initEditorEvents() {
+
+        document.addEventListener('click', (e) => {
+        const controlBtn = e.target.closest('.btn-slide-control');
+        if (!controlBtn) return;
+
+        const action = controlBtn.dataset.action;
+        const wrapper = controlBtn.closest('.slide-wrapper');
+        if (!wrapper) return;
+
+        // AÇÃO: REMOVER
+        if (action === 'remove') {
+            const allSlides = document.querySelectorAll('.slide-wrapper');
+            if (allSlides.length <= 1) {
+                alert("Você não pode remover o último slide restante.");
+                return;
+            }
+            wrapper.remove();
+            saveState(); // Salva no histórico (Undo/Redo)
+        } 
+        
+        // AÇÃO: DUPLICAR
+        else if (action === 'duplicate') {
+            const clone = wrapper.cloneNode(true);
+            
+            // Renova os IDs das texturas (noise) para o SVG não bugar
+            const texture = clone.querySelector('.slide-texture-canvas');
+            if (texture) {
+                const newId = Date.now() + Math.floor(Math.random() * 1000);
+                texture.innerHTML = texture.innerHTML.replace(/noise\d+/g, `noise${newId}`).replace(/dots\d+/g, `dots${newId}`);
+            }
+            
+            clone.classList.remove('active');
+            wrapper.parentNode.insertBefore(clone, wrapper.nextSibling);
+            
+            if (window.lucide) window.lucide.createIcons({ root: clone });
+            saveState();
+        }
+        
+        // AÇÃO: ADICIONAR NOVO (VAZIO)
+        else if (action === 'add') {
+            const currentSlide = wrapper.querySelector('.slide');
+            const templateClass = Array.from(currentSlide.classList).find(c => c.startsWith('layout-')) || 'layout-tech';
+            
+            const newWrapper = document.createElement('div');
+            newWrapper.className = 'slide-wrapper';
+            
+            const slideDiv = document.createElement('div');
+            slideDiv.className = `slide ${templateClass} slide-blank`;
+            
+            // Puxa o rodapé do slide atual para manter a identidade (Logo, marca)
+            const footerEl = currentSlide.querySelector('.slide-footer');
+            const footerHtml = footerEl ? footerEl.outerHTML : '';
+            
+            // Prepara a textura
+            const textureEl = currentSlide.querySelector('.slide-texture-canvas');
+            let textureHtml = '';
+            if (textureEl) {
+                const newId = Date.now() + Math.floor(Math.random() * 1000);
+                textureHtml = textureEl.outerHTML.replace(/noise\d+/g, `noise${newId}`).replace(/dots\d+/g, `dots${newId}`);
+            }
+            
+            const guidesHtml = `<div class="guide-line guide-v"></div><div class="guide-line guide-h"></div>`;
+            const bgHtml = `<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1080&auto=format&fit=crop" class="slide-bg-img editable-img" crossorigin="anonymous" style="opacity: 0.1;"><div class="slide-gradient"></div>`;
+
+            slideDiv.innerHTML = `
+                ${bgHtml}
+                <div class="slide-content" style="z-index: 10; position: relative; align-items: center; justify-content: center; display: flex;">
+                    <h2 class="draggable new-element text-element" contenteditable="true" spellcheck="false" style="font-size: 80px; font-weight: 800; text-align: center; width: 100%; z-index: 1000;">Novo Slide</h2>
+                </div>
+                ${footerHtml}
+                ${guidesHtml}
+                ${textureHtml}
+            `;
+            newWrapper.appendChild(slideDiv);
+            
+            // Adiciona os botões de controle no novo slide também
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'slide-controls';
+            controlsDiv.innerHTML = `
+                <button class="btn-slide-control" data-action="duplicate" title="Duplicar Slide"><i data-lucide="copy"></i></button>
+                <button class="btn-slide-control" data-action="add" title="Adicionar Slide Vazio"><i data-lucide="plus"></i></button>
+                <button class="btn-slide-control delete" data-action="remove" title="Remover Slide"><i data-lucide="trash-2"></i></button>
+            `;
+            newWrapper.appendChild(controlsDiv);
+            
+            wrapper.parentNode.insertBefore(newWrapper, wrapper.nextSibling);
+            if (window.lucide) window.lucide.createIcons({ root: newWrapper });
+            saveState();
+        }
+    });
+
     createSelectionBox();
 
     // Salvar estado ao sair de elementos de texto (edição concluída)

@@ -240,6 +240,15 @@ export function renderCarousel(data, template, topic = "tecnologia") { // <-- To
 
         slideDiv.innerHTML = slideHTML + footerHtml + guidesHtml + textureHtml;
         wrapper.appendChild(slideDiv);
+
+        const controlsDiv = document.createElement('div');
+        controlsDiv.className = 'slide-controls';
+        controlsDiv.innerHTML = `
+            <button class="btn-slide-control" data-action="duplicate" title="Duplicar Slide"><i data-lucide="copy"></i></button>
+            <button class="btn-slide-control" data-action="add" title="Adicionar Slide Vazio"><i data-lucide="plus"></i></button>
+            <button class="btn-slide-control delete" data-action="remove" title="Remover Slide"><i data-lucide="trash-2"></i></button>
+        `;
+        
         container.appendChild(wrapper);
     });
 

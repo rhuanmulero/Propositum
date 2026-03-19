@@ -290,14 +290,29 @@ if (draftIdParam) {
         // Injeta o HTML salvo de volta na tela
         document.getElementById('carouselContainer').innerHTML = loadedDraft.htmlContent;
         
+        //Força os botões a aparecerem em Rascunhos Antigos
+        document.querySelectorAll('.slide-wrapper').forEach(wrapper => {
+            if (!wrapper.querySelector('.slide-controls')) {
+                const controlsDiv = document.createElement('div');
+                controlsDiv.className = 'slide-controls';
+                controlsDiv.innerHTML = `
+                    <button class="btn-slide-control" data-action="duplicate" title="Duplicar Slide"><i data-lucide="copy"></i></button>
+                    <button class="btn-slide-control" data-action="add" title="Adicionar Slide Vazio"><i data-lucide="plus"></i></button>
+                    <button class="btn-slide-control delete" data-action="remove" title="Remover Slide"><i data-lucide="trash-2"></i></button>
+                `;
+                wrapper.appendChild(controlsDiv);
+            }
+        });
+        window.lucide.createIcons(); 
+        
         // Ativa o botão de exportar
         document.getElementById('btnDownload').style.display = 'flex';
         
-        // Restaura o state history (para o Undo/Redo não quebrar)
-        AppState.history =[loadedDraft.htmlContent];
+        // Restaura o state history com o HTML ATUALIZADO (com os botões) para o Undo/Redo não quebrar
+        AppState.history = [document.getElementById('carouselContainer').innerHTML];
         AppState.historyIndex = 0;
         
-        console.log("Rascunho carregado com sucesso!");
+        console.log("Rascunho carregado e atualizado com sucesso!");
     }
 }
 

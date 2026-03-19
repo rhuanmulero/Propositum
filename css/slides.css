@@ -67,3 +67,59 @@ body[data-tool="pointer"] .editable-img:hover { outline: 4px dashed var(--brand-
 .footer-corp { height: 220px; padding: 0 80px 40px 80px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; z-index: 50; position: relative; flex-shrink: 0; pointer-events: none;}
 .footer-corp .swipe-btn { border: 3px solid var(--brand-color); padding: 18px 45px; border-radius: 50px; font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 800; color: var(--text-color); background: transparent; margin-bottom: 35px; pointer-events: auto;}
 .footer-corp .source-link { font-size: 16px; color: rgba(var(--text-rgb), 0.6); margin-top: 25px; text-align: center; pointer-events: auto;}
+
+/* ====================================================
+   CONTROLES DE SLIDE (ADICIONAR / DUPLICAR / REMOVER)
+   ==================================================== */
+.slide-controls {
+    position: absolute;
+    top: -130px; /* Mais alto para caber o botão maior */
+    right: 0;
+    display: flex;
+    gap: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 100;
+}
+
+.slide-wrapper:hover .slide-controls,
+.slide-wrapper.active .slide-controls {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.btn-slide-control {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    color: #333;
+    width: 100px; /* AUMENTADO PARA A ESCALA DE 1080px */
+    height: 100px; 
+    border-radius: 24px;
+    cursor: pointer;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-slide-control:hover {
+    background: #fff;
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+    color: #0071e3;
+}
+
+.btn-slide-control.delete:hover {
+    color: #ff3b30;
+    border-color: rgba(255, 59, 48, 0.3);
+}
+
+.btn-slide-control i {
+    width: 48px; /* Ícone grande */
+    height: 48px;
+}
