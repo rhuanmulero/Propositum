@@ -1,12 +1,13 @@
 import { AppState } from '../state.js';
 import { saveState, undo, redo } from './history.js';
+import { fetchSingleSlide } from '../utils/api.js';
+import { buildUltimateLayout } from './render.js';
 
 let cropperInstance = null;
 let isResizing = false;
 let resizeDir = '';
 let startW = 0, startH = 0, startX = 0, startY = 0, startLeft = 0, startTop = 0;
 
-// Utilitário para converter RGB para HEX (usado no seletor de cor)
 function rgbToHex(rgb) {
     if (!rgb || rgb === 'transparent') return '#ffffff';
     let match = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
@@ -14,7 +15,6 @@ function rgbToHex(rgb) {
     return "#" + (1 << 24 | match[1] << 16 | match[2] << 8 | match[3]).toString(16).slice(1);
 }
 
-// Garante que todo novo elemento nasça acima dos outros
 function getHighestZIndex(slide) {
     let max = 10;
     slide.querySelectorAll('.draggable').forEach(el => {
@@ -25,9 +25,7 @@ function getHighestZIndex(slide) {
 }
 
 export function updateSelectionBox() {
-    // Limpa todas as caixas antigas
     document.querySelectorAll('.selection-box').forEach(b => b.remove());
-    
     if (!AppState.selectedElements || AppState.selectedElements.length === 0) return;
 
     const slide = AppState.selectedElements[0].closest('.slide');
@@ -37,7 +35,6 @@ export function updateSelectionBox() {
         const box = document.createElement('div');
         box.className = 'selection-box';
         
-        // Só mostra as alças de redimensionamento se apenas UM elemento estiver selecionado
         if (AppState.selectedElements.length === 1) {['tl', 'tr', 'bl', 'br', 'l', 'r', 't', 'b'].forEach(dir => {
                 const h = document.createElement('div');
                 h.className = `resize-handle ${dir}`;
@@ -64,7 +61,6 @@ export function selectElement(el, shiftKey = false) {
 
     if (!AppState.selectedElements) AppState.selectedElements =[]; 
 
-    // Lógica do SHIFT + Clique (Multi-seleção)
     if (shiftKey) {
         if (!AppState.selectedElements.includes(el)) {
             AppState.selectedElements.push(el);
@@ -119,7 +115,6 @@ function addElementToActiveSlide(htmlStr) {
     el.style.left = '400px'; 
     el.style.top = '500px';
     
-    // CORREÇÃO: Nasce sempre na frente de todos os elementos daquele slide
     el.style.zIndex = getHighestZIndex(slide) + 1;
     
     selectElement(el, false);
@@ -127,7 +122,7 @@ function addElementToActiveSlide(htmlStr) {
 }
 
 function initResize(e, dir) {
-    if (AppState.selectedElements.length !== 1) return; // Protege de redimensionar vários ao mesmo tempo
+    if (AppState.selectedElements.length !== 1) return; 
     isResizing = true;
     resizeDir = dir;
     startX = e.clientX;
@@ -151,8 +146,7 @@ function initResize(e, dir) {
 
 export function initEditorEvents() {
 
-    // --- CONTROLES DOS SLIDES (Duplicar, Novo, Excluir) ---
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', async (e) => {
         const controlBtn = e.target.closest('.btn-slide-control');
         if (!controlBtn) return;
 
@@ -214,6 +208,7 @@ export function initEditorEvents() {
             const controlsDiv = document.createElement('div');
             controlsDiv.className = 'slide-controls';
             controlsDiv.innerHTML = `
+                <button class="btn-slide-control regenerate" data-action="regenerate" title="Regerar Slide"><i data-lucide="refresh-cw"></i></button>
                 <button class="btn-slide-control" data-action="duplicate" title="Duplicar Slide"><i data-lucide="copy"></i></button>
                 <button class="btn-slide-control" data-action="add" title="Adicionar Slide Vazio"><i data-lucide="plus"></i></button>
                 <button class="btn-slide-control delete" data-action="remove" title="Remover Slide"><i data-lucide="trash-2"></i></button>
@@ -223,18 +218,58 @@ export function initEditorEvents() {
             if (window.lucide) window.lucide.createIcons({ root: newWrapper });
             saveState();
         }
+        else if (action === 'regenerate') {
+            const apiKey = localStorage.getItem('propositum_api_key') || '';
+            if (!apiKey) {
+                alert("Configure sua API Key nas configurações (no Dashboard) para poder usar a função Regerar com Inteligência Artificial.");
+                return;
+            }
+
+            const currentSlide = wrapper.querySelector('.slide');
+            
+            const templateClass = Array.from(currentSlide.classList).find(c => c.startsWith('layout-')) || 'layout-tech';
+            const slideTypeClass = Array.from(currentSlide.classList).find(c => c.startsWith('slide-'));
+            const slideType = slideTypeClass ? slideTypeClass.replace('slide-', '') : 'features';
+            const themeStr = document.getElementById('themeInput').value.trim() || 'tecnologia';
+
+            controlBtn.innerHTML = '<i data-lucide="loader-2" class="spin"></i>';
+            if (window.lucide) window.lucide.createIcons();
+
+            try {
+                const newSlideData = await fetchSingleSlide(themeStr, templateClass, apiKey, AppState.activeProfile, slideType);
+                if (newSlideData) {
+                    
+                    const index = Array.from(wrapper.parentNode.children).indexOf(wrapper);
+                    const newHtml = buildUltimateLayout(newSlideData, index, templateClass, themeStr); 
+
+                    const footerEl = currentSlide.querySelector('.slide-footer');
+                    const textureEl = currentSlide.querySelector('.slide-texture-canvas');
+                    const guidesHtml = `<div class="guide-line guide-v"></div><div class="guide-line guide-h"></div>`;
+
+                    currentSlide.innerHTML = newHtml + (footerEl ? footerEl.outerHTML : '') + guidesHtml + (textureEl ? textureEl.outerHTML : '');
+
+                    if (window.lucide) window.lucide.createIcons({ root: currentSlide });
+                    saveState();
+                } else {
+                    alert("Ocorreu um erro de comunicação com a IA na hora de regerar este slide. Tente novamente.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro inesperado. Verifique o console.");
+            } finally {
+                controlBtn.innerHTML = '<i data-lucide="refresh-cw"></i>';
+                if (window.lucide) window.lucide.createIcons();
+            }
+        }
     });
 
     document.addEventListener('focusout', (e) => {
         if (e.target.isContentEditable) saveState();
     });
 
-    // --- SELEÇÃO DE ELEMENTOS E TOOLBAR ---
     document.addEventListener('mousedown', (e) => {
-        // Ignora cliques com botão direito ou com a ferramenta "mão"
         if (e.button !== 0 || AppState.currentTool === 'hand') return; 
 
-        // IMPORTANTE: Se o usuário clicou nos menus globais (Dock, Zoom, etc), ignora para não perder a seleção
         if (e.target.closest('.figma-toolbar, .floating-dock, .zoom-controls')) {
             return;
         }
@@ -249,14 +284,12 @@ export function initEditorEvents() {
         
         if (selectable) {
             if (!e.target.closest('#btnToolbarMove')) {
-                // Passa o e.shiftKey para permitir multi-seleção
                 selectElement(selectable, e.shiftKey);
                 
                 const toolbar = document.getElementById('elementToolbar');
                 if (toolbar && AppState.selectedElements.length > 0) {
                     toolbar.style.display = 'flex';
                     
-                    // Baseia a posição da toolbar no último elemento selecionado
                     const lastEl = AppState.selectedElements[AppState.selectedElements.length - 1];
                     const rect = lastEl.getBoundingClientRect();
                     
@@ -267,7 +300,6 @@ export function initEditorEvents() {
                     toolbar.style.left = tLeft + 'px';
                     toolbar.style.top = tTop + 'px';
 
-                    // Mostrar/Ocultar botão de recortar imagem
                     const btnChange = document.getElementById('btnToolbarChange');
                     const divChange = document.getElementById('divImageChange');
                     if (lastEl.classList.contains('editable-img') || lastEl.querySelector('.editable-img')) {
@@ -280,7 +312,6 @@ export function initEditorEvents() {
                         AppState.targetImageToReplace = null;
                     }
 
-                    // INTELIGÊNCIA: Lê a fonte e o tamanho do último elemento para jogar no input
                     const fontSelect = document.getElementById('toolbarFont');
                     const fontSizeInput = document.getElementById('toolbarFontSize');
                     const colorPicker = document.getElementById('toolbarColor');
@@ -302,8 +333,7 @@ export function initEditorEvents() {
                 }
             }
         } else {
-            // Se NÃO clicou em um elemento arrastável, e NÃO clicou em ferramentas, apaga a seleção
-            if (!e.target.closest('.selection-box') && !e.target.closest('.element-toolbar') && !e.target.closest('.crop-modal-overlay')) {
+            if (!e.target.closest('.selection-box') && !e.target.closest('.element-toolbar') && !e.target.closest('.crop-modal-overlay') && !e.target.closest('.modal-overlay')) {
                 deselectElement();
                 const toolbar = document.getElementById('elementToolbar');
                 if (toolbar) toolbar.style.display = 'none';
@@ -318,7 +348,6 @@ export function initEditorEvents() {
         }
     });
 
-    // --- REDIMENSIONAMENTO DO ELEMENTO ---
     document.addEventListener('mousemove', (e) => {
         if (isResizing && AppState.selectedElements.length === 1) {
             const el = AppState.selectedElements[0];
@@ -349,7 +378,6 @@ export function initEditorEvents() {
         }
     });
 
-    // --- ADICIONAR FORMAS ---
     document.getElementById('btnAddText')?.addEventListener('click', () => {
         addElementToActiveSlide(`<div class="draggable new-element text-element" contenteditable="true" spellcheck="false" style="font-size: 60px; font-family: 'Montserrat', sans-serif; font-weight: 800; color: var(--text-color); position: absolute; z-index: 1000;">Novo Texto</div>`);
     });
@@ -372,7 +400,6 @@ export function initEditorEvents() {
         addElementToActiveSlide(`<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop" class="draggable editable-img new-element image-element" crossorigin="anonymous" style="width: 400px; height: 400px; object-fit: cover; border-radius: 20px; position: absolute; z-index: 1000;">`);
     });
 
-    // --- ATALHOS DE TECLADO ---
     document.addEventListener('keydown', (e) => {
         const activeTag = document.activeElement.tagName.toLowerCase();
         const isEditingText = activeTag === 'input' || activeTag === 'textarea' || document.activeElement.isContentEditable;
@@ -391,7 +418,6 @@ export function initEditorEvents() {
         }
     });
 
-    // --- FERRAMENTAS DA TOOLBAR (MULTIPLOS ELEMENTOS) ---
     document.getElementById('btnToolbarCopy')?.addEventListener('click', () => {
         if (AppState.selectedElements.length === 0) return;
         
@@ -404,7 +430,6 @@ export function initEditorEvents() {
             clone.style.left = (currentLeft + 30) + 'px';
             clone.style.top = (currentTop + 30) + 'px';
             
-            // Nasce sempre em cima
             clone.style.zIndex = getHighestZIndex(el.closest('.slide')) + 1;
             
             el.parentNode.appendChild(clone);
@@ -439,7 +464,6 @@ export function initEditorEvents() {
         saveState();
     });
 
-    // TAMANHO DA FONTE (Aplica a todos os textos selecionados)
     document.getElementById('toolbarFontSize')?.addEventListener('input', (e) => {
         if(AppState.selectedElements.length === 0) return;
         AppState.selectedElements.forEach(el => {
@@ -474,20 +498,72 @@ export function initEditorEvents() {
     
     document.getElementById('btnToolbarLayerUp')?.addEventListener('click', () => {
         if(AppState.selectedElements.length === 0) return;
+        
         AppState.selectedElements.forEach(el => {
-            let z = parseInt(window.getComputedStyle(el).zIndex) || 10;
-            if (z === 'auto' || isNaN(z)) z = 10;
-            el.style.zIndex = z + 1;
+            if (window.getComputedStyle(el).position === 'static') {
+                el.style.position = 'relative';
+            }
+            
+            let currentZ = parseInt(window.getComputedStyle(el).zIndex);
+            if (isNaN(currentZ) || window.getComputedStyle(el).zIndex === 'auto') currentZ = 10;
+            
+            const slide = el.closest('.slide');
+            let targetZ = currentZ + 1; 
+            
+            if (slide) {
+                let lowestAbove = 9000;
+                let found = false;
+                
+                slide.querySelectorAll('.draggable, .editable-img, .shape-element').forEach(node => {
+                    if (node === el) return;
+                    let z = parseInt(window.getComputedStyle(node).zIndex);
+                    if (!isNaN(z) && z > currentZ && z < lowestAbove) {
+                        lowestAbove = z;
+                        found = true;
+                    }
+                });
+                
+                if (found) {
+                    targetZ = lowestAbove + 1; 
+                } else {
+                    targetZ = getHighestZIndex(slide) + 1; 
+                }
+            }
+            
+            el.style.zIndex = targetZ;
         });
         saveState();
     });
 
     document.getElementById('btnToolbarLayerDown')?.addEventListener('click', () => {
         if(AppState.selectedElements.length === 0) return;
+        
         AppState.selectedElements.forEach(el => {
-            let z = parseInt(window.getComputedStyle(el).zIndex) || 10;
-            if (z === 'auto' || isNaN(z)) z = 10;
-            el.style.zIndex = Math.max(0, z - 1);
+            if (window.getComputedStyle(el).position === 'static') {
+                el.style.position = 'relative';
+            }
+            
+            let currentZ = parseInt(window.getComputedStyle(el).zIndex);
+            if (isNaN(currentZ) || window.getComputedStyle(el).zIndex === 'auto') currentZ = 10;
+            
+            const slide = el.closest('.slide');
+            let targetZ = Math.max(2, currentZ - 1); 
+            
+            if (slide) {
+                let highestBelow = 2; 
+                
+                slide.querySelectorAll('.draggable, .editable-img, .shape-element').forEach(node => {
+                    if (node === el) return;
+                    let z = parseInt(window.getComputedStyle(node).zIndex);
+                    if (!isNaN(z) && z < currentZ && z > highestBelow) {
+                        highestBelow = z;
+                    }
+                });
+                
+                targetZ = Math.max(2, highestBelow - 1); 
+            }
+            
+            el.style.zIndex = targetZ;
         });
         saveState();
     });
@@ -510,7 +586,6 @@ export function initEditorEvents() {
         saveState();
     });
 
-// --- UPLOAD / CROP DE IMAGEM ---
     document.getElementById('btnToolbarChange')?.addEventListener('click', () => {
         document.getElementById('slideImageInput')?.click();
         const toolbar = document.getElementById('elementToolbar');
@@ -530,7 +605,6 @@ export function initEditorEvents() {
                 cropTarget.src = ev.target.result;
                 if (cropperInstance) cropperInstance.destroy();
                 
-                // O timeout garante que o modal já tem tamanho físico na tela antes do Cropper agir
                 setTimeout(() => {
                     cropperInstance = new window.Cropper(cropTarget, { 
                         viewMode: 1, 
@@ -546,9 +620,10 @@ export function initEditorEvents() {
 
     document.getElementById('btnApplyCrop')?.addEventListener('click', () => {
         if (cropperInstance && AppState.targetImageToReplace) {
-            // Pega a imagem recortada em alta qualidade
+            
+            // CORREÇÃO: Utilizando image/png para garantir o suporte de background transparente
             const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2000, maxHeight: 2000 });
-            AppState.targetImageToReplace.src = canvas.toDataURL('image/jpeg', 0.9);
+            AppState.targetImageToReplace.src = canvas.toDataURL('image/png');
             
             const modal = document.getElementById('cropModal');
             if (modal) modal.style.display = 'none';
@@ -568,7 +643,6 @@ export function initEditorEvents() {
         }
     });
 
-    // LOGO GLOBAL UPLOAD (Mantido como estava)
     document.getElementById('btnLogoUpload')?.addEventListener('click', () => document.getElementById('logoInput')?.click());
     
     document.getElementById('logoInput')?.addEventListener('change', (e) => {

@@ -6,7 +6,6 @@
     <title>Propositum | Studio</title>
     <link rel="stylesheet" href="css/main.css">
     
-    <!-- Adicionado crossorigin="anonymous" para permitir a exportação -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;0,900;1,800&family=Inter:wght@400;500;600;700&family=PT+Serif:wght@700&display=swap" rel="stylesheet" crossorigin="anonymous">
@@ -17,6 +16,85 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js" crossorigin="anonymous"></script>
+    
+    <!-- ESTILOS DOS MODAIS E PREVIEW -->
+    <style>
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); display: none; justify-content: center; align-items: center; z-index: 10000; opacity: 0; transition: 0.4s; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1); border-radius: 32px; width: 100%; max-width: 650px; padding: 40px; transform: scale(0.95) translateY(20px); transition: 0.5s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 40px 80px rgba(0,0,0,0.8); }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn-close { background: none; border: none; color: #888; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
+        .btn-close:hover { color: #fff; transform: rotate(90deg); }
+        
+        .template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 30px; }
+        .template-card { background: #111; border: 2px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.3s; color: #888; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;}
+        .template-card:hover { border-color: rgba(255,255,255,0.2); color: #fff; transform: translateY(-2px); }
+        .template-card.active { border-color: var(--brand-color, #ea580c); background: rgba(255,255,255,0.05); color: #fff; }
+        .template-card span { font-size: 13px; font-weight: 600; }
+        
+        .input-dark { width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 14px 16px; border-radius: 12px; font-size: 16px; font-family: 'Inter'; outline: none; transition: 0.3s; color-scheme: dark;}
+        .input-dark:focus { border-color: var(--brand-color); }
+        
+        .form-label { display: block; font-size: 13px; color: #ffffff; text-transform: uppercase; font-weight: 700; margin-bottom: 12px; }
+
+        /* --- NOVO: LAYOUT DUPLO DO MODAL DE GERAÇÃO --- */
+        .generate-modal-layout { display: flex; max-width: 960px !important; padding: 0 !important; overflow: hidden; }
+        .gen-config-area { flex: 1.2; padding: 40px; display: flex; flex-direction: column; }
+        .gen-preview-area { flex: 0.8; background: #050505; border-left: 1px solid rgba(255,255,255,0.05); padding: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        
+        /* --- NOVO: ESTILOS DO PREVIEW --- */
+        .preview-wrapper { width: 100%; max-width: 280px; aspect-ratio: 4/5; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 24px; transition: all 0.4s ease; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .p-icon { width: 28px; height: 28px; background: currentColor; opacity: 0.5; border-radius: 50%; margin-bottom: 12px; }
+        .p-card-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+        .p-card-desc { font-size: 11px; opacity: 0.7; line-height: 1.4; }
+
+        /* Tema 1: Tech */
+        .preview-wrapper[data-theme="layout-tech"] { background: #081225; color: #fff; }
+        .preview-wrapper[data-theme="layout-tech"] .p-tag { background: #ea580c; color: #fff; border-radius: 50px; padding: 6px 14px; font-size: 10px; font-weight: bold; align-self: flex-start; margin-bottom: 16px; }
+        .preview-wrapper[data-theme="layout-tech"] .p-title { font-size: 26px; font-weight: 800; margin-bottom: 20px; line-height: 1.1; letter-spacing: -0.5px;}
+        .preview-wrapper[data-theme="layout-tech"] .p-card { background: rgba(234, 88, 12, 0.1); border: 1px solid rgba(234, 88, 12, 0.3); border-radius: 16px; padding: 20px; }
+
+        /* Tema 2: Corp */
+        .preview-wrapper[data-theme="layout-corp"] { background: #ffffff; color: #000; }
+        .preview-wrapper[data-theme="layout-corp"] .p-tag { border: 1px solid #000; color: #000; border-radius: 4px; padding: 6px 14px; font-size: 10px; font-weight: bold; align-self: flex-start; margin-bottom: 16px; }
+        .preview-wrapper[data-theme="layout-corp"] .p-title { font-size: 26px; font-weight: 700; font-family: 'PT Serif', serif; margin-bottom: 20px; line-height: 1.1;}
+        .preview-wrapper[data-theme="layout-corp"] .p-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+        /* Tema 3: Minimalista */
+        .preview-wrapper[data-theme="layout-minimal"] { background: #ffffff; color: #111; }
+        .preview-wrapper[data-theme="layout-minimal"] .p-tag { background: #111; color: #fff; padding: 6px 14px; font-size: 10px; font-weight: bold; align-self: flex-start; margin-bottom: 16px; }
+        .preview-wrapper[data-theme="layout-minimal"] .p-title { font-size: 26px; font-weight: 600; margin-bottom: 20px; letter-spacing: -0.5px; line-height: 1.1;}
+        .preview-wrapper[data-theme="layout-minimal"] .p-card { background: #fafafa; border-left: 4px solid #000; padding: 20px; }
+        .preview-wrapper[data-theme="layout-minimal"] .p-icon { display: none; }
+
+        /* Tema 4: Neon */
+        .preview-wrapper[data-theme="layout-neon"] { background: #09090b; color: #fff; }
+        .preview-wrapper[data-theme="layout-neon"] .p-tag { border: 1px solid #ec4899; color: #ec4899; padding: 6px 14px; font-size: 10px; font-weight: bold; align-self: flex-start; margin-bottom: 16px; box-shadow: 0 0 10px rgba(236, 72, 153, 0.4); }
+        .preview-wrapper[data-theme="layout-neon"] .p-title { font-size: 26px; font-weight: 900; margin-bottom: 20px; text-shadow: 0 0 10px rgba(236, 72, 153, 0.6); line-height: 1.1;}
+        .preview-wrapper[data-theme="layout-neon"] .p-card { background: rgba(0,0,0,0.6); border: 1px solid #ec4899; padding: 20px; box-shadow: 0 0 15px rgba(236, 72, 153, 0.2); }
+        .preview-wrapper[data-theme="layout-neon"] .p-icon { color: #ec4899; opacity: 1; filter: drop-shadow(0 0 5px #ec4899); }
+
+        /* Tema 5: Editorial */
+        .preview-wrapper[data-theme="layout-editorial"] { background: #f4f0ec; color: #222; }
+        .preview-wrapper[data-theme="layout-editorial"] .p-tag { background: #222; color: #f4f0ec; padding: 6px 14px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; align-self: flex-start; margin-bottom: 16px; }
+        .preview-wrapper[data-theme="layout-editorial"] .p-title { font-size: 26px; font-weight: 700; font-family: 'PT Serif', serif; font-style: italic; margin-bottom: 20px; line-height: 1.1;}
+        .preview-wrapper[data-theme="layout-editorial"] .p-card { border-bottom: 1px solid #222; padding: 20px 0; }
+        .preview-wrapper[data-theme="layout-editorial"] .p-icon { display: none; }
+
+        /* Tema 6: Glass */
+        .preview-wrapper[data-theme="layout-glass"] { background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; }
+        .preview-wrapper[data-theme="layout-glass"] .p-tag { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px); color: #fff; border-radius: 50px; padding: 6px 14px; font-size: 10px; font-weight: bold; align-self: flex-start; margin-bottom: 16px; }
+        .preview-wrapper[data-theme="layout-glass"] .p-title { font-size: 26px; font-weight: 800; margin-bottom: 20px; line-height: 1.1;}
+        .preview-wrapper[data-theme="layout-glass"] .p-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); border-radius: 16px; padding: 20px; }
+
+        /* Tema 7: Bold */
+        .preview-wrapper[data-theme="layout-bold"] { background: #fbbf24; color: #000; }
+        .preview-wrapper[data-theme="layout-bold"] .p-tag { background: #000; color: #fbbf24; padding: 6px 14px; font-size: 10px; font-weight: 900; text-transform: uppercase; align-self: flex-start; margin-bottom: 16px; border: 2px solid #000; }
+        .preview-wrapper[data-theme="layout-bold"] .p-title { font-size: 26px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; line-height: 1; letter-spacing: -1px;}
+        .preview-wrapper[data-theme="layout-bold"] .p-card { background: #fbbf24; border: 3px solid #000; padding: 20px; box-shadow: 6px 6px 0 #000; }
+        .preview-wrapper[data-theme="layout-bold"] .p-icon { background: #000; border-radius: 0; opacity: 1; }
+    </style>
 </head>
 <body>
     
@@ -52,18 +130,7 @@
                     <i data-lucide="link" class="dock-icon"></i>
                     <input type="text" id="websiteInput" placeholder="seusite.com.br">
                 </div>
-                <div class="input-wrap select-group">
-                    <i data-lucide="layout-template" class="dock-icon"></i>
-                    <select id="templateSelect">
-                        <option value="layout-tech">1. Tech/Ícones</option>
-                        <option value="layout-corp">2. Blocos/Notícia</option>
-                        <option value="layout-minimal">3. Minimalista</option>
-                        <option value="layout-neon">4. Cyber/Neon</option>
-                        <option value="layout-editorial">5. Editorial</option>
-                        <option value="layout-glass">6. Glassmorphism</option>
-                        <option value="layout-bold">7. Brutalista</option>
-                    </select>
-                </div>
+                
                 <div class="divider-v"></div>
                 <div class="wl-controls">
                     <div class="color-picker-wrap" title="Cor da Marca">
@@ -87,7 +154,7 @@
                         <i data-lucide="save" class="icon-sm"></i>
                         <span>Salvar</span>
                     </button>
-                    <button id="btnGenerate" class="btn-primary">
+                    <button id="btnOpenGenerate" class="btn-primary">
                         <span id="btnGenText">Gerar IA</span>
                     </button>
                     <button id="btnDownload" class="btn-download" style="display: none;">
@@ -110,7 +177,7 @@
             </div>
         </main>
 
-        <!-- CONTROLE DE ZOOM (Figma Like) -->
+        <!-- CONTROLE DE ZOOM -->
         <div class="zoom-controls">
             <button id="btnZoomOut"><i data-lucide="minus"></i></button>
             <span id="zoomLevel">40%</span>
@@ -119,46 +186,32 @@
 
         <!-- MODAIS E TOOLBARS FLUTUANTES -->
         <div id="elementToolbar" class="element-toolbar" style="display: none; white-space: nowrap; gap: 8px;">
-            
-            <!-- NOVAS FERRAMENTAS DE DESIGN -->
             <select id="toolbarFont" class="toolbar-btn" style="width: 100px; padding: 4px; outline: none; border: none; background: transparent; font-weight: 600; cursor: pointer;">
                 <option value="'Inter', sans-serif">Inter</option>
                 <option value="'Montserrat', sans-serif">Montserrat</option>
                 <option value="'PT Serif', serif">PT Serif</option>
                 <option value="monospace">Monospace</option>
             </select>
-
-            <!-- NOVO: Controle de Tamanho da Fonte -->
             <input type="number" id="toolbarFontSize" class="toolbar-btn" style="width: 60px; padding: 4px; border: none; background: transparent; font-weight: 600; text-align: center; border-left: 1px solid rgba(0,0,0,0.1);" title="Tamanho da Fonte" min="8" max="250">
-            
             <div style="position:relative; width:26px; height:26px; border-radius:50%; overflow:hidden; border:1px solid rgba(0,0,0,0.1); flex-shrink: 0;">
                 <input type="color" id="toolbarColor" title="Cor do Elemento" style="position:absolute; top:-10px; left:-10px; width:50px; height:50px; cursor:pointer; border: none; padding: 0;">
             </div>
-            
             <button id="btnToolbarGradient" class="toolbar-btn" title="Aplicar Gradiente"><i data-lucide="palette"></i></button>
-
             <div class="divider-v"></div>
-
             <button id="btnToolbarChange" class="toolbar-btn" title="Alterar Imagem"><i data-lucide="image-plus"></i></button>
             <div class="divider-v" id="divImageChange" style="display: none;"></div>
-
             <button id="btnToolbarLayerUp" class="toolbar-btn" title="Trazer para Frente"><i data-lucide="arrow-up-to-line"></i></button>
             <button id="btnToolbarLayerDown" class="toolbar-btn" title="Enviar para Trás"><i data-lucide="arrow-down-to-line"></i></button>
-            
             <div class="divider-v"></div>
-            
             <button id="btnToolbarOpacityDown" class="toolbar-btn" title="Diminuir Transparência">- <i data-lucide="blend" style="width:14px;"></i></button>
             <button id="btnToolbarOpacityUp" class="toolbar-btn" title="Aumentar Transparência">+ <i data-lucide="blend" style="width:14px;"></i></button>
-            
             <div class="divider-v"></div>
-
-            <!-- BOTÃO DE DUPLICAR E EXCLUIR -->
             <button id="btnToolbarCopy" class="toolbar-btn" title="Duplicar Elemento"><i data-lucide="copy"></i></button>
             <button id="btnToolbarDelete" class="toolbar-btn" title="Excluir"><i data-lucide="trash-2" style="color: #ff3b30;"></i></button>
             <div id="btnToolbarMove" class="toolbar-btn" title="Mover"><i data-lucide="move"></i></div>
         </div>
 
-        <!-- NOVO: MODAL DE EXPORTAÇÃO -->
+        <!-- MODAL DE EXPORTAÇÃO -->
         <div id="exportModal" class="export-modal-overlay">
             <div class="export-modal-content">
                 <i data-lucide="loader-2" class="spin"></i>
@@ -170,6 +223,7 @@
             </div>
         </div>
         
+        <!-- MODAL DE CROP -->
         <div id="cropModal" class="crop-modal-overlay">
             <div class="crop-modal">
                 <h3 style="color: #111; font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 700;">Ajustar Imagem</h3>
@@ -183,14 +237,62 @@
             </div>
         </div>
 
+        <!-- MODAL DE CONFIGURAÇÃO DE GERAÇÃO COM PREVIEW -->
+        <div id="generateModal" class="modal-overlay">
+            <div class="modal-content generate-modal-layout">
+                
+                <!-- LADO ESQUERDO: CONFIGURAÇÕES -->
+                <div class="gen-config-area">
+                    <div class="modal-header" style="margin-bottom: 24px;">
+                        <h2 style="font-size: 26px; font-weight: 800; color: #ffffff;">Configurar Carrossel</h2>
+                        <button class="btn-close" id="btnCloseGenerateModal"><i data-lucide="x" style="width: 28px; height: 28px;"></i></button>
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <label class="form-label"><i data-lucide="layers" style="width: 14px; margin-right: 6px; display:inline-block; vertical-align:middle;"></i> Quantidade de Slides</label>
+                        <input type="number" id="configSlideCount" class="input-dark" min="2" max="10" value="5">
+                        <p style="font-size: 12px; color: #888; margin-top: 8px;">A IA cuidará da narrativa do início ao fim baseada nessa quantidade.</p>
+                    </div>
+
+                    <div style="flex: 1;">
+                        <label class="form-label"><i data-lucide="layout-template" style="width: 14px; margin-right: 6px; display:inline-block; vertical-align:middle;"></i> Estilo Visual (Template)</label>
+                        <div class="template-grid" id="templateGrid">
+                            <div class="template-card active" data-template="layout-tech"><i data-lucide="cpu"></i><span>Tech / Ícones</span></div>
+                            <div class="template-card" data-template="layout-corp"><i data-lucide="building-2"></i><span>Corp / Notícia</span></div>
+                            <div class="template-card" data-template="layout-minimal"><i data-lucide="circle-dashed"></i><span>Minimalista</span></div>
+                            <div class="template-card" data-template="layout-neon"><i data-lucide="zap"></i><span>Cyber / Neon</span></div>
+                            <div class="template-card" data-template="layout-editorial"><i data-lucide="book-open"></i><span>Editorial</span></div>
+                            <div class="template-card" data-template="layout-glass"><i data-lucide="box"></i><span>Glassmorphism</span></div>
+                            <div class="template-card" data-template="layout-bold"><i data-lucide="square-asterisk"></i><span>Brutalista</span></div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" id="btnConfirmGenerate" style="width: 100%; font-size: 16px; padding: 18px; border-radius: 16px; margin-top: 20px;">
+                        <i data-lucide="sparkles" style="width: 20px;"></i> Iniciar Geração IA
+                    </button>
+                </div>
+
+                <!-- LADO DIREITO: PREVIEW VISUAL -->
+                <div class="gen-preview-area">
+                    <p style="position: absolute; top: 30px; left: 0; width: 100%; text-align: center; color: #666; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Preview do Estilo</p>
+                    
+                    <div class="preview-wrapper" id="previewSlide" data-theme="layout-tech">
+                        <div class="p-tag">ALERTA</div>
+                        <div class="p-title">O Futuro das Decisões.</div>
+                        <div class="p-card">
+                            <div class="p-icon"></div>
+                            <div class="p-card-title">Vantagem Competitiva</div>
+                            <div class="p-card-desc">Gere valor absoluto e cresça em escala.</div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
     </div>
 
-
-
-    <!-- Script alterado para type module -->
     <script type="module" src="js/main.js"></script>
     <script>lucide.createIcons();</script>
-</body>
-</html>
 </body>
 </html>

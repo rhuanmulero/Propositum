@@ -10,7 +10,6 @@ const premiumImageBank = {
     realestate:["https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1080&auto=format&fit=crop", "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=1080&auto=format&fit=crop"]
 };
 
-// Pega imagens aleatórias com alto grau de variação
 const getDynamicImg = (slideIndex, elementIndex, category) => {
     const safeCategory = premiumImageBank[category] ? category : 'office';
     const imagesArray = premiumImageBank[safeCategory];
@@ -26,8 +25,42 @@ const getIcon = (idx) => {
 const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // ==========================================
-// REGRAS DE ESTILO (A PELE DO DESIGN)
+// PADRÕES DE TEXTURA DE FUNDO (NOVIDADE)
 // ==========================================
+function getBackgroundPatterns(template) {
+    let html = '';
+    switch(template) {
+        case 'layout-tech':
+            html += `<div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 40px 40px; z-index: 1; pointer-events: none;"></div>`;
+            html += `<div style="position: absolute; top: -10%; left: -10%; width: 70%; height: 70%; background: var(--brand-color); opacity: 0.15; filter: blur(140px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
+            break;
+        case 'layout-corp':
+            html += `<div style="position: absolute; inset: 0; background: repeating-linear-gradient(45deg, rgba(var(--text-rgb), 0.02) 0px, rgba(var(--text-rgb), 0.02) 2px, transparent 2px, transparent 12px); z-index: 1; pointer-events: none;"></div>`;
+            break;
+        case 'layout-minimal':
+            html += `<div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(var(--text-rgb), 0.08) 2px, transparent 2px); background-size: 30px 30px; z-index: 1; pointer-events: none;"></div>`;
+            break;
+        case 'layout-neon':
+            html += `<div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(var(--brand-rgb), 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--brand-rgb), 0.15) 1px, transparent 1px); background-size: 50px 50px; z-index: 1; pointer-events: none;"></div>`;
+            html += `<div style="position: absolute; bottom: -10%; right: -10%; width: 80%; height: 80%; background: var(--brand-color); opacity: 0.2; filter: blur(150px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
+            break;
+        case 'layout-editorial':
+            html += `<div style="position: absolute; inset: 0; background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.15) 150%); z-index: 1; pointer-events: none;"></div>`;
+            html += `<div style="position: absolute; top: 40px; bottom: 40px; left: 40px; right: 40px; border: 1px solid rgba(var(--text-rgb), 0.1); z-index: 1; pointer-events: none;"></div>`;
+            break;
+        case 'layout-glass':
+            html += `<div style="position: absolute; top: 10%; left: 10%; width: 500px; height: 500px; background: var(--brand-color); opacity: 0.35; filter: blur(120px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
+            html += `<div style="position: absolute; bottom: 10%; right: 10%; width: 400px; height: 400px; background: #ffffff; opacity: 0.15; filter: blur(100px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
+            break;
+        case 'layout-bold':
+            html += `<div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(var(--text-rgb), 0.12) 4px, transparent 4px); background-size: 20px 20px; z-index: 1; pointer-events: none;"></div>`;
+            break;
+        default:
+            break;
+    }
+    return html;
+}
+
 const THEME_RULES = {
     'layout-tech': {
         card: 'background: rgba(var(--brand-rgb), 0.1); border: 1px solid rgba(var(--brand-rgb), 0.3); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);',
@@ -48,7 +81,7 @@ const THEME_RULES = {
         image: 'border-radius: 0px;',
         title: 'font-weight: 600; letter-spacing: -0.03em;',
         button: 'background: var(--text-color); color: var(--bg-color); border-radius: 0; border: none; font-weight: 600;',
-        iconWrap: 'display: none;' // Minimalista oculta os ícones
+        iconWrap: 'display: none;' 
     },
     'layout-neon': {
         card: 'background: rgba(0,0,0,0.6); border: 1px solid var(--brand-color); border-radius: 0; box-shadow: 0 0 20px rgba(var(--brand-rgb), 0.3);',
@@ -80,10 +113,7 @@ const THEME_RULES = {
     }
 };
 
-// ==========================================
-// O MOTOR ABSOLUTO: ESTRUTURAS RANDÔMICAS + ESTILOS INJETADOS
-// ==========================================
-function buildUltimateLayout(slide, slideIndex, template, topic) {
+export function buildUltimateLayout(slide, slideIndex, template, topic) {
     let bgHtml = '';
     let contentHtml = '';
     const siteUrl = document.getElementById('websiteInput')?.value.trim() || 'seusite.com.br';
@@ -92,7 +122,6 @@ function buildUltimateLayout(slide, slideIndex, template, topic) {
     const imgUrl2 = getDynamicImg(slideIndex, 1, topic);
     const theme = THEME_RULES[template] || THEME_RULES['layout-tech'];
 
-    // --- CAPA (COVER) ---
     if (slide.type === 'cover') {
         const coverLayouts =['centered-pill', 'magazine-overlap', 'split-horizontal', 'brutalist-block', 'overlay-classic', 'side-image'];
         const layout = pickRandom(coverLayouts);
@@ -154,7 +183,6 @@ function buildUltimateLayout(slide, slideIndex, template, topic) {
                 </div>`;
         }
         else {
-            // overlay-classic
             bgHtml = `<img src="${imgUrl1}" class="slide-bg-img editable-img" crossorigin="anonymous" style="opacity: 0.5;"><div class="slide-gradient"></div>`;
             contentHtml = `
                 <div class="slide-content" style="justify-content: flex-end; align-items: flex-start; text-align: left; padding-bottom: 100px;">
@@ -163,7 +191,6 @@ function buildUltimateLayout(slide, slideIndex, template, topic) {
         }
     } 
     
-    // --- MEIO (FEATURES/PROCESS/NEWS) ---
     else if (slide.type === 'features' || slide.type === 'process' || slide.type === 'news') {
         const contentLayouts =['grid-2x2', 'vertical-stack', 'side-by-side', 'staggered-masonry', 'giant-numbers', 'zigzag'];
         const layout = pickRandom(contentLayouts);
@@ -173,7 +200,6 @@ function buildUltimateLayout(slide, slideIndex, template, topic) {
 
         const mainTitle = `<h2 class="draggable" contenteditable="true" style="${theme.title} font-size: 60px; margin-bottom: 40px; line-height: 1.1;">${slide.title}</h2>`;
 
-        // Renderizador de Card (injeta os estilos do tema)
         const renderCard = (i, idx, extraStyle = '') => `
             <div class="draggable" style="${theme.card} padding: 30px; display: flex; flex-direction: column; gap: 15px; ${extraStyle}">
                 <div style="${theme.iconWrap}">
@@ -265,7 +291,6 @@ function buildUltimateLayout(slide, slideIndex, template, topic) {
         }
     } 
     
-    // --- FINAL (CTA) ---
     else if (slide.type === 'cta') {
         const ctaLayouts =['massive-button', 'split-bottom', 'floating-box', 'minimal-punch'];
         const layout = pickRandom(ctaLayouts);
@@ -315,12 +340,12 @@ function buildUltimateLayout(slide, slideIndex, template, topic) {
         }
     }
 
-    return bgHtml + contentHtml;
+    // INJETA O BACKGROUND DEDICADO DO TEMA ENTRE A IMAGEM DE FUNDO E O CONTEÚDO
+    const patternHtml = getBackgroundPatterns(template);
+
+    return bgHtml + patternHtml + contentHtml;
 }
 
-// ==========================================
-// RENDERIZADOR PRINCIPAL
-// ==========================================
 export function renderCarousel(data, template, topic = "tecnologia") {
     const container = document.getElementById('carouselContainer');
     container.innerHTML = '';
@@ -331,10 +356,8 @@ export function renderCarousel(data, template, topic = "tecnologia") {
         wrapper.className = 'slide-wrapper';
         
         const slideDiv = document.createElement('div');
-        // Mantém a classe do template para o CSS base funcionar
         slideDiv.className = `slide ${template} slide-${slide.type}`;
 
-        // MÁGICA: GERA A ESTRUTURA COM AS REGRAS DO TEMA
         let slideHTML = buildUltimateLayout(slide, index, template, topic);
         
         const brandName = AppState.activeProfile ? AppState.activeProfile.name : "Sua Marca";
@@ -342,7 +365,6 @@ export function renderCarousel(data, template, topic = "tecnologia") {
             ? `<img src="${AppState.customLogoUrl}" class="custom-logo-img draggable">` 
             : `<span class="default-logo-text draggable" contenteditable="true" style="font-family: 'Montserrat'; font-weight: 900;">${brandName}</span>`;
 
-        // Rodapé Universal Inteligente
         let footerHtml = `
             <div class="slide-footer footer-tech" style="position: absolute; bottom: 0; left: 0; width: 100%; z-index: 50; padding: 0 60px 50px 60px; display: flex; justify-content: space-between; align-items: flex-end;">
                 <div class="brand-logo-container" style="height: 50px;">${logoContent}</div>
@@ -364,6 +386,7 @@ export function renderCarousel(data, template, topic = "tecnologia") {
         const controlsDiv = document.createElement('div');
         controlsDiv.className = 'slide-controls';
         controlsDiv.innerHTML = `
+            <button class="btn-slide-control regenerate" data-action="regenerate" title="Regerar Slide"><i data-lucide="refresh-cw"></i></button>
             <button class="btn-slide-control" data-action="duplicate" title="Duplicar Slide"><i data-lucide="copy"></i></button>
             <button class="btn-slide-control" data-action="add" title="Adicionar Slide Vazio"><i data-lucide="plus"></i></button>
             <button class="btn-slide-control delete" data-action="remove" title="Remover Slide"><i data-lucide="trash-2"></i></button>
@@ -376,8 +399,7 @@ export function renderCarousel(data, template, topic = "tecnologia") {
     window.lucide.createIcons();
     document.getElementById('btnDownload').style.display = 'flex';
     
-    // Reseta histórico para Ctrl+Z funcionar
-    AppState.history = [];
+    AppState.history =[];
     AppState.historyIndex = -1;
     saveState();
 }

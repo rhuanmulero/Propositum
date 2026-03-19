@@ -13,11 +13,11 @@ export async function downloadCarousel() {
     const canvasPlane = document.getElementById('canvasPlane');
     const originalTransform = canvasPlane.style.transform;
     
-    // Reseta escala para 1:1 e garante que está no topo
+    // Reseta escala para 1:1 e garante que está no topo antes do print
     canvasPlane.style.transform = 'translate(0px, 0px) scale(1)';
     
-    // Espera importante (1 segundo) para carregar as fontes e renderizar o SVG de ruído
-    await new Promise(r => setTimeout(r, 1000));
+    // Espera importante (1.5 segundos) para que o DOM recalcule a resolução nativa e texturas
+    await new Promise(r => setTimeout(r, 1500));
 
     const slides = document.querySelectorAll('.slide');
 
@@ -25,11 +25,13 @@ export async function downloadCarousel() {
         const slide = slides[i];
         
         try {
-            // Usando toPng com cacheBust para limpar erros de URL
             const dataUrl = await window.htmlToImage.toPng(slide, {
-                pixelRatio: 2,
+                pixelRatio: 3,
+                quality: 1.0,
+                width: 1080,
+                height: 1350,
                 cacheBust: true,
-                style: { transform: 'none' }
+                style: { transform: 'none', margin: '0' }
             });
             
             const link = document.createElement('a');
@@ -38,7 +40,7 @@ export async function downloadCarousel() {
             link.click();
             
         } catch (error) {
-            console.error('Erro:', error);
+            console.error('Erro na renderização do slide:', error);
         }
         
         progressBar.style.width = `${((i + 1) / slides.length) * 100}%`;
