@@ -42,26 +42,103 @@ export function getMockData(template, topic) {
 }
 
 export async function fetchGeminiData(theme, template, apiKey, activeProfile) {
-    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
     let brandContext = "";
     if (activeProfile && activeProfile.vision) {
-        brandContext = `IMPORTANTE: Aja como a marca "${activeProfile.name}". Tom de voz e diretrizes: "${activeProfile.vision}". Crie os textos refletindo essa personalidade rigorosamente. `;
+        brandContext = `IMPORTANTE: Aja como a marca "${activeProfile.name}". Tom de voz e diretrizes: "${activeProfile.vision}". Crie os textos refletindo essa personalidade.`;
     }
 
-    const rule = `"image_category":"Classifique o tema em UMA destas categorias exatas: office, technology, health, fitness, food, realestate, pets, education. Se nenhuma encaixar perfeitamente, retorne office"`;
-
-    const promptTech = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {${rule},"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"features","title":"Tít","subtitle":"Sub","items":[{"title":"Tít","desc":"Desc"}]},{"type":"process","title":"Tít","subtitle":"Sub","items":[{"title":"P1","desc":"Desc"}],"footerText":"Rodapé"},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
     
-    const promptCorp = `Retorne APENAS JSON. ${brandContext} Tema: "${theme}". Estrutura: {${rule},"slides":[{"type":"cover","tag":"TAG","title":"Tít"},{"type":"news","newsHeadline":"Falsa Notícia","newsSub":"Resumo","title":"Tít","bullets":["Ponto 1","Ponto 2"]},{"type":"features","title":"Tít","items":[{"title":"Item","desc":"Desc"}]},{"type":"cta","title":"Tít","desc":"Desc","button":"Botão"}]}`;
+    const rules = isStructureA ? `
+BLOCOS PARA OS SLIDES DO MEIO:
+- "features": Propriedades obrigatórias -> "title", "subtitle" (opcional), "show_image" (booleano), "items" (array com 2 a 4 itens contendo "title" e "desc").
+- "process": Propriedades obrigatórias -> "title", "footerText", "items" (array com 2 a 4 itens contendo "title" e "desc").
+` : `
+BLOCOS PARA OS SLIDES DO MEIO:
+- "features": Propriedades obrigatórias -> "title", "show_image" (booleano), "items" (array com 2 a 4 itens contendo "title" e "desc").
+- "news": Propriedades obrigatórias -> "newsHeadline", "newsSub", "title", "bullets" (array com 2 a 4 strings).
+`;
+
+const prompt = `
+Você é um Copywriter e Diretor de Arte Sênior.
+Crie um carrossel de EXATAMENTE 4 SLIDES sobre o tema: "${theme}".
+
+${brandContext}
+
+REGRA DE DIREÇÃO DE ARTE (OBRIGATÓRIO):
+Você deve tomar decisões de layout para que cada carrossel seja visualmente único.
+Para CADA slide, escolha:
+- "text_align": "left", "center" ou "right"
+- "card_style": "solid", "glass", "outline" ou "minimal" (apenas para slides com itens)
+- "image_mode": "top", "background", ou "split" (como a imagem principal será exibida)
+
+RETORNE APENAS UM JSON VÁLIDO SEGUINDO ESTE FORMATO EXATO:
+{
+  "image_category": "technology",
+  "slides":[
+    {
+      "type": "cover",
+      "text_align": "center",
+      "image_mode": "background",
+      "tag": "ESCREVA A TAG AQUI",
+      "title": "ESCREVA O TÍTULO DE IMPACTO AQUI"
+    },
+    {
+      "type": "ESCOLHA UM BLOCO AQUI (features, process ou news)",
+      "text_align": "left",
+      "image_mode": "split",
+      "card_style": "solid",
+      "title": "ESCREVA O TÍTULO",
+      "show_image": true,
+      "items":[
+        { "title": "Item 1", "desc": "Descrição curta 1" },
+        { "title": "Item 2", "desc": "Descrição curta 2" }
+      ]
+    },
+    {
+      "type": "ESCOLHA OUTRO BLOCO AQUI",
+      "text_align": "center",
+      "image_mode": "top",
+      "card_style": "glass",
+      "title": "ESCREVA O TÍTULO AQUI",
+      "show_image": false,
+      "items":[
+        { "title": "Passo 1", "desc": "Descrição do passo" },
+        { "title": "Passo 2", "desc": "Descrição do passo" }
+      ]
+    },
+    {
+      "type": "cta",
+      "text_align": "center",
+      "image_mode": "background",
+      "title": "CHAMADA PARA AÇÃO",
+      "desc": "ARGUMENTO FINAL",
+      "button": "TEXTO DO BOTÃO"
+    }
+  ]
+}
+
+${rules}
+`;
 
     try {
-        const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: isStructureA ? promptTech : promptCorp }] }] }) });
-        if (!response.ok) throw new Error("Chave inválida");
+        const response = await fetch(url, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({ 
+                contents: [{ parts:[{ text: prompt }] }],
+                generationConfig: { response_mime_type: "application/json" } 
+            }) 
+        });
+        
+        if (!response.ok) throw new Error("Erro na chave de API");
         const data = await response.json();
-        return JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim());
+        let rawJson = data.candidates[0].content.parts[0].text;
+        return JSON.parse(rawJson.replace(/```json/g, '').replace(/```/g, '').trim());
     } catch (error) {
-        console.error(error); return null;
+        console.error("Erro na IA:", error); 
+        return null;
     }
 }
