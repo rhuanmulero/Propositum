@@ -231,8 +231,12 @@ export function initEditorEvents() {
 
     // --- SELEÇÃO DE ELEMENTOS E TOOLBAR ---
     document.addEventListener('mousedown', (e) => {
-        if (e.button !== 0 || AppState.currentTool === 'hand' || e.target.closest('.canvas-plane') === null && e.target.closest('.selection-box') === null) {
-            return; 
+        // Ignora cliques com botão direito ou com a ferramenta "mão"
+        if (e.button !== 0 || AppState.currentTool === 'hand') return; 
+
+        // IMPORTANTE: Se o usuário clicou nos menus globais (Dock, Zoom, etc), ignora para não perder a seleção
+        if (e.target.closest('.figma-toolbar, .floating-dock, .zoom-controls')) {
+            return;
         }
 
         const handle = e.target.closest('.resize-handle');
@@ -298,6 +302,7 @@ export function initEditorEvents() {
                 }
             }
         } else {
+            // Se NÃO clicou em um elemento arrastável, e NÃO clicou em ferramentas, apaga a seleção
             if (!e.target.closest('.selection-box') && !e.target.closest('.element-toolbar') && !e.target.closest('.crop-modal-overlay')) {
                 deselectElement();
                 const toolbar = document.getElementById('elementToolbar');
@@ -505,7 +510,7 @@ export function initEditorEvents() {
         saveState();
     });
 
-    // --- UPLOAD / CROP DE IMAGEM ---
+// --- UPLOAD / CROP DE IMAGEM ---
     document.getElementById('btnToolbarChange')?.addEventListener('click', () => {
         document.getElementById('slideImageInput')?.click();
         const toolbar = document.getElementById('elementToolbar');
@@ -524,9 +529,15 @@ export function initEditorEvents() {
             if (cropTarget) {
                 cropTarget.src = ev.target.result;
                 if (cropperInstance) cropperInstance.destroy();
-                if (window.Cropper) {
-                    cropperInstance = new window.Cropper(cropTarget, { viewMode: 1, autoCropArea: 1, background: false });
-                }
+                
+                // O timeout garante que o modal já tem tamanho físico na tela antes do Cropper agir
+                setTimeout(() => {
+                    cropperInstance = new window.Cropper(cropTarget, { 
+                        viewMode: 1, 
+                        autoCropArea: 1, 
+                        background: false 
+                    });
+                }, 50);
             }
         };
         reader.readAsDataURL(file);
@@ -535,13 +546,15 @@ export function initEditorEvents() {
 
     document.getElementById('btnApplyCrop')?.addEventListener('click', () => {
         if (cropperInstance && AppState.targetImageToReplace) {
-            const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 1080, maxHeight: 1350 });
+            // Pega a imagem recortada em alta qualidade
+            const canvas = cropperInstance.getCroppedCanvas({ maxWidth: 2000, maxHeight: 2000 });
             AppState.targetImageToReplace.src = canvas.toDataURL('image/jpeg', 0.9);
             
             const modal = document.getElementById('cropModal');
             if (modal) modal.style.display = 'none';
             
-            cropperInstance.destroy(); cropperInstance = null;
+            cropperInstance.destroy(); 
+            cropperInstance = null;
             saveState(); 
         }
     });
@@ -549,10 +562,13 @@ export function initEditorEvents() {
     document.getElementById('btnCancelCrop')?.addEventListener('click', () => {
         const modal = document.getElementById('cropModal');
         if (modal) modal.style.display = 'none';
-        if(cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+        if(cropperInstance) { 
+            cropperInstance.destroy(); 
+            cropperInstance = null; 
+        }
     });
 
-    // LOGO GLOBAL UPLOAD
+    // LOGO GLOBAL UPLOAD (Mantido como estava)
     document.getElementById('btnLogoUpload')?.addEventListener('click', () => document.getElementById('logoInput')?.click());
     
     document.getElementById('logoInput')?.addEventListener('change', (e) => {

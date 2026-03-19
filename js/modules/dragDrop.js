@@ -3,34 +3,74 @@ import { updateSelectionBox, selectElement } from './editor.js';
 import { saveState } from './history.js';
 
 let draggedEl = null;
-let startX = 0, startY = 0;
-let isDragging = false;
+let startX = 0, startY = 0, initLeft = 0, initTop = 0, isDragging = false;
+let baseLeft = 0, baseRight = 0, baseTop = 0, baseBottom = 0, baseCx = 0, baseCy = 0;
+let sibBounds =[];
 let currentSlide = null;
 
-// Array para guardar as posições iniciais e z-index de todos os elementos selecionados
+// Guarda posições e z-index de múltiplos elementos
 let initialPositions =[];
 
 function initDragSetup(el, e) {
-    // Se clicou em um elemento que NÃO está na seleção atual, seleciona só ele
     if (!AppState.selectedElements.includes(el)) {
         selectElement(el, e.shiftKey);
     }
 
-    draggedEl = el;
+    draggedEl = el; // O elemento clicado serve de âncora para as guias
     currentSlide = draggedEl.closest('.slide');
+    
     startX = e.clientX; 
     startY = e.clientY;
+    initLeft = parseFloat(draggedEl.style.left) || 0;
+    initTop = parseFloat(draggedEl.style.top) || 0;
     isDragging = false;
-    initialPositions =[];
 
-    // Guarda a posição e a camada original de TODOS os elementos selecionados
+    // Salva posições iniciais e z-index original de todos selecionados
+    initialPositions =[];
     AppState.selectedElements.forEach(selEl => {
         initialPositions.push({
             el: selEl,
             left: parseFloat(selEl.style.left) || 0,
             top: parseFloat(selEl.style.top) || 0,
-            zIndex: selEl.style.zIndex || '10' // Salva o z-index original!
+            zIndex: selEl.style.zIndex || '10'
         });
+    });
+
+    const scale = AppState.canvasScale;
+    const slideRect = currentSlide.getBoundingClientRect();
+    
+    // Reseta temporariamente para pegar a posição pura
+    const oldLeft = draggedEl.style.left; 
+    const oldTop = draggedEl.style.top;
+    draggedEl.style.left = '0px'; 
+    draggedEl.style.top = '0px';
+
+    const elRect = draggedEl.getBoundingClientRect();
+    baseLeft = (elRect.left - slideRect.left) / scale;
+    baseTop = (elRect.top - slideRect.top) / scale;
+    const elW = elRect.width / scale;
+    const elH = elRect.height / scale;
+
+    baseRight = baseLeft + elW; 
+    baseBottom = baseTop + elH;
+    baseCx = baseLeft + elW / 2; 
+    baseCy = baseTop + elH / 2;
+
+    draggedEl.style.left = oldLeft; 
+    draggedEl.style.top = oldTop;
+
+    // Calcula os limites dos irmãos (ignorando os que estão selecionados)
+    sibBounds =[];
+    const siblings = Array.from(currentSlide.querySelectorAll('.draggable, .editable-img')).filter(n => !AppState.selectedElements.includes(n));
+    
+    siblings.forEach(sib => {
+        const sRect = sib.getBoundingClientRect();
+        if (sRect.width === 0) return;
+        const sl = (sRect.left - slideRect.left) / scale;
+        const st = (sRect.top - slideRect.top) / scale;
+        const sw = sRect.width / scale; 
+        const sh = sRect.height / scale;
+        sibBounds.push({ l: sl, r: sl + sw, t: st, b: st + sh, cx: sl + sw/2, cy: st + sh/2 });
     });
 }
 
@@ -48,10 +88,10 @@ export function initDragAndDropEvents() {
             return;
         }
         
-        const draggable = e.target.closest('.draggable');
+        // Agora pega imagens também!
+        const draggable = e.target.closest('.draggable, .editable-img');
         if (!draggable) return;
         if (draggable.isContentEditable && document.activeElement === draggable) return;
-        if (e.target.classList.contains('editable-img')) return; 
 
         initDragSetup(draggable, e);
     });
@@ -62,27 +102,60 @@ export function initDragAndDropEvents() {
         
         let dx = (e.clientX - startX) / AppState.canvasScale;
         let dy = (e.clientY - startY) / AppState.canvasScale;
+        let rawLeft = initLeft + dx; 
+        let rawTop = initTop + dy;
 
-        // Move TODOS os elementos selecionados juntos
+        let curL = baseLeft + rawLeft; let curR = baseRight + rawLeft; let curCx = baseCx + rawLeft;
+        let curT = baseTop + rawTop; let curB = baseBottom + rawTop; let curCy = baseCy + rawTop;
+
+        let bestDistX = 15; let snapXVal = rawLeft; let guideX = null;
+        let bestDistY = 15; let snapYVal = rawTop; let guideY = null;
+
+        // Eixo Central (540, 675)
+        if(Math.abs(curCx - 540) < bestDistX) { bestDistX = Math.abs(curCx - 540); snapXVal = rawLeft + (540 - curCx); guideX = 540; }
+        if(Math.abs(curCy - 675) < bestDistY) { bestDistY = Math.abs(curCy - 675); snapYVal = rawTop + (675 - curCy); guideY = 675; }
+
+        // Eixo dos elementos irmãos
+        sibBounds.forEach(sib => {
+            [ [curL, sib.l],[curL, sib.r],[curCx, sib.cx],[curR, sib.l],[curR, sib.r] ].forEach(pair => {
+                let diff = Math.abs(pair[0] - pair[1]);
+                if(diff < bestDistX) { bestDistX = diff; snapXVal = rawLeft + (pair[1] - pair[0]); guideX = pair[1]; }
+            });
+            [[curT, sib.t],[curT, sib.b],[curCy, sib.cy],[curB, sib.t],[curB, sib.b] ].forEach(pair => {
+                let diff = Math.abs(pair[0] - pair[1]);
+                if(diff < bestDistY) { bestDistY = diff; snapYVal = rawTop + (pair[1] - pair[0]); guideY = pair[1]; }
+            });
+        });
+
+        // Delta real aplicado após o ímã (snapping)
+        let actualDx = snapXVal - initLeft;
+        let actualDy = snapYVal - initTop;
+
+        // Move todos juntos baseados no ímã do elemento principal
         initialPositions.forEach(pos => {
-            pos.el.style.left = `${pos.left + dx}px`;
-            pos.el.style.top = `${pos.top + dy}px`;
-            pos.el.style.zIndex = '10000'; // Joga pro topo APENAS enquanto arrasta
+            pos.el.style.left = `${pos.left + actualDx}px`;
+            pos.el.style.top = `${pos.top + actualDy}px`;
+            pos.el.style.zIndex = '10000'; 
         });
         
         updateSelectionBox();
+
+        // Desenha as Guias
+        if (currentSlide) {
+            const gV = currentSlide.querySelector('.guide-v');
+            const gH = currentSlide.querySelector('.guide-h');
+            if(gV) { gV.style.display = guideX !== null ? 'block' : 'none'; gV.style.left = `${guideX}px`; }
+            if(gH) { gH.style.display = guideY !== null ? 'block' : 'none'; gH.style.top = `${guideY}px`; }
+        }
         window.getSelection().removeAllRanges(); 
     });
 
     document.addEventListener('mouseup', () => {
         if (draggedEl) {
-            if (isDragging) {
-                saveState();
-            } else if (draggedEl.isContentEditable) {
-                draggedEl.focus(); 
-            }
+            if (isDragging) saveState(); 
+            else if (draggedEl.isContentEditable) draggedEl.focus(); 
             
-            // RESTAURA O Z-INDEX ORIGINAL (Isso corrige o bug de ir pro fundo)
+            // Restaura Z-Index original de todos
             initialPositions.forEach(pos => {
                 pos.el.style.zIndex = pos.zIndex; 
             });

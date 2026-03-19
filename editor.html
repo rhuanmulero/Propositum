@@ -118,7 +118,7 @@
         </div>
 
         <!-- MODAIS E TOOLBARS FLUTUANTES -->
-        <div id="elementToolbar" class="element-toolbar" style="display: none; flex-wrap: wrap; gap: 8px;">
+        <div id="elementToolbar" class="element-toolbar" style="display: none; white-space: nowrap; gap: 8px;">
             
             <!-- NOVAS FERRAMENTAS DE DESIGN -->
             <select id="toolbarFont" class="toolbar-btn" style="width: 100px; padding: 4px; outline: none; border: none; background: transparent; font-weight: 600; cursor: pointer;">
@@ -170,7 +170,22 @@
             </div>
         </div>
         
-    </div> <!-- Fim do .app-layout -->
+        <div id="cropModal" class="crop-modal-overlay">
+            <div class="crop-modal">
+                <h3 style="color: #111; font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 700;">Ajustar Imagem</h3>
+                <div class="crop-workspace">
+                    <img id="cropTarget" src="" style="max-width: 100%; display: block;">
+                </div>
+                <div class="crop-actions">
+                    <button id="btnCancelCrop" class="btn-secondary">Cancelar</button>
+                    <button id="btnApplyCrop" class="btn-primary" style="margin-top: 0; width: auto;">Aplicar Recorte</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
 
     <!-- Script alterado para type module -->
     <script type="module" src="js/main.js"></script>
