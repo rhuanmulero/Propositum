@@ -17,7 +17,6 @@
             min-height: 100vh; overflow-x: hidden;
         }
 
-        /* Holofote Dinâmico com a cor da Marca */
         .brand-glow {
             position: absolute; top: -20vh; left: 50%; transform: translateX(-50%);
             width: 80vw; height: 50vh;
@@ -38,7 +37,6 @@
 
         main { padding: 40px 60px; max-width: 1400px; margin: 0 auto; position: relative; z-index: 10; }
 
-        /* Header da Marca */
         .entity-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 60px; animation: fadeUp 0.8s forwards; }
         .entity-info { display: flex; align-items: center; gap: 24px; }
         .entity-logo { width: 80px; height: 80px; border-radius: 20px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1); background: #111; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; }
@@ -52,31 +50,71 @@
         }
         .btn-create:hover { transform: scale(1.05); box-shadow: 0 10px 30px rgba(255,255,255,0.2); }
 
-        /* Analytics Grid (Visão Geral) */
-        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 60px; animation: fadeUp 0.8s forwards; animation-delay: 0.1s; opacity: 0; }
-        .metric-card { background: rgba(20,20,20,0.5); border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 24px; backdrop-filter: blur(20px); }
-        .metric-title { display: flex; align-items: center; gap: 8px; color: #888; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 16px; }
-        .metric-value { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; }
-        .metric-trend { color: #34c759; font-size: 14px; font-weight: 600; margin-left: 12px; }
+        /* Filtro de Tempo */
+        .metrics-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; animation: fadeUp 0.8s forwards; opacity: 0; animation-delay: 0.1s;}
+        .metrics-header h3 { font-size: 20px; font-weight: 800; color: #fff; }
+        .input-dark { background: #111; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px; font-family: 'Inter'; outline: none; transition: 0.3s; cursor: pointer; }
+        .input-dark:focus { border-color: var(--brand-color); }
 
-        /* Tabs Section */
-        .tabs { display: flex; gap: 32px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 40px; animation: fadeUp 0.8s forwards; animation-delay: 0.2s; opacity: 0;}
+        /* Analytics Grid */
+        .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 60px; animation: fadeUp 0.8s forwards; animation-delay: 0.2s; opacity: 0; }
+        .metric-card { background: rgba(20,20,20,0.5); border: 1px solid rgba(255,255,255,0.05); padding: 30px; border-radius: 24px; backdrop-filter: blur(20px); }
+        .metric-title { display: flex; align-items: center; gap: 8px; color: #888; font-size: 13px; font-weight: 700; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.05em; }
+        .metric-value { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; display: flex; align-items: baseline; }
+
+        .tabs { display: flex; gap: 32px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 40px; animation: fadeUp 0.8s forwards; animation-delay: 0.3s; opacity: 0;}
         .tab { padding-bottom: 16px; color: #888; font-weight: 600; cursor: pointer; transition: 0.3s; border-bottom: 2px solid transparent; }
         .tab.active { color: #fff; border-bottom-color: var(--brand-color); }
 
-        /* Rascunhos Grid */
+        /* Rascunhos / Publicados Grid */
         .drafts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
-        .draft-card { background: #111; border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; cursor: pointer; transition: 0.3s; }
-        .draft-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-5px); }
-        .draft-cover { width: 100%; height: 200px; background: #000; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative;}
+        .draft-card { background: #111; border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; }
+        .draft-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .draft-cover { width: 100%; height: 200px; background: #000; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer;}
         .draft-cover img { width: 100%; height: 100%; object-fit: contain; }
-        .draft-info { padding: 24px; }
+        .draft-info { padding: 24px; flex: 1; display: flex; flex-direction: column; }
         .draft-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-        .draft-meta { color: #666; font-size: 13px; display: flex; justify-content: space-between;}
+        .draft-meta { color: #666; font-size: 13px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;}
         
         .badge-status { position: absolute; top: 16px; right: 16px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); text-transform: uppercase;}
 
+        /* Inputs de Métricas no Card */
+        .metrics-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;}
+        .metrics-inputs label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;}
+        .metrics-inputs input { width: 100%; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 10px; border-radius: 10px; font-size: 14px; outline: none; transition: 0.3s; font-family: 'Inter'; font-weight: 600;}
+        .metrics-inputs input:focus { border-color: var(--brand-color); background: rgba(255,255,255,0.08); }
+
         @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+        /* --- UI DE IDEIAS E PAUTAS --- */
+        .ideias-wrapper { display: none; animation: fadeUp 0.5s forwards; }
+        .ideias-header { display: flex; gap: 16px; margin-bottom: 40px; }
+        .ideias-header input { flex: 1; padding: 18px 24px; border-radius: 16px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 16px; font-family: 'Inter'; outline: none; transition: 0.3s; }
+        .ideias-header input:focus { border-color: var(--brand-color); background: rgba(255,255,255,0.06); }
+        .btn-ideia { background: var(--text); color: var(--bg); border: none; padding: 0 32px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-ideia:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+        
+        .btn-ai-brainstorm { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.15); padding: 0 24px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .btn-ai-brainstorm:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+        .kanban-board { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .kanban-column h3 { font-size: 16px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 16px; }
+        .badge-count { background: rgba(255,255,255,0.1); padding: 2px 10px; border-radius: 100px; font-size: 12px; color: #fff; margin-left: auto; font-weight: 600;}
+        .badge-count.brand { background: var(--brand-color); color: var(--bg); }
+        .ideia-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 24px; border-radius: 20px; margin-bottom: 16px; transition: 0.3s; display: flex; flex-direction: column; gap: 16px; }
+        .ideia-card:hover { border-color: rgba(255,255,255,0.2); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2);}
+        .ideia-text { font-size: 15px; line-height: 1.6; color: rgba(255,255,255,0.9); font-weight: 500; }
+        .ideia-actions { display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px; }
+        
+        .btn-card { padding: 8px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; width: auto; }
+        .btn-approve { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-approve:hover { background: #fff; color: #000; }
+        .btn-generate { background: var(--text); color: var(--bg); border: 1px solid transparent;}
+        .btn-generate:hover { transform: scale(0.96); }
+        .btn-delete { background: transparent; color: #666; padding: 8px; }
+        .btn-delete:hover { color: #ff3b30; background: rgba(255,59,48,0.1); }
+        .btn-publish { background: rgba(52, 199, 89, 0.1); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.2); width: 100%; margin-top: auto; }
+        .btn-publish:hover { background: #34c759; color: #fff; }
 
     </style>
 </head>
@@ -102,54 +140,95 @@
             </button>
         </div>
 
-        <!-- Visão Geral de Métricas (Fictícias por enquanto para dar cara de SaaS) -->
+        <!-- Dashboard Interativo -->
+        <div class="metrics-header">
+            <h3>Visão Geral da Marca</h3>
+            <select id="timeFilter" class="input-dark" onchange="calculateMetrics()">
+                <option value="7">Últimos 7 dias</option>
+                <option value="28" selected>Últimos 28 dias</option>
+                <option value="90">Últimos 90 dias</option>
+                <option value="365">Últimos 365 dias</option>
+                <option value="all">Todo o período</option>
+            </select>
+        </div>
+
         <div class="analytics-grid">
             <div class="metric-card">
-                <div class="metric-title"><i data-lucide="eye" style="width:16px;"></i> Impressões (Mês)</div>
-                <div class="metric-value">124.5k <span class="metric-trend">↗ +14%</span></div>
+                <div class="metric-title"><i data-lucide="eye" style="width:16px;"></i> Impressões</div>
+                <div class="metric-value" id="metricImpressions">0</div>
             </div>
             <div class="metric-card">
-                <div class="metric-title"><i data-lucide="bookmark" style="width:16px;"></i> Salvamentos</div>
-                <div class="metric-value">3,402 <span class="metric-trend">↗ +8%</span></div>
+                <div class="metric-title"><i data-lucide="mouse-pointer-click" style="width:16px;"></i> Engajamento</div>
+                <div class="metric-value" id="metricEngagement">0</div>
             </div>
             <div class="metric-card">
                 <div class="metric-title"><i data-lucide="check-circle" style="width:16px;"></i> Pautas Aprovadas</div>
-                <div class="metric-value">12 <span style="color:#666; font-size:14px; margin-left:12px; font-weight:600;">Este mês</span></div>
+                <div class="metric-value" id="metricPautas">0 <span style="color:#666; font-size:14px; margin-left:12px; font-weight:600;">Este mês</span></div>
             </div>
         </div>
 
         <div class="tabs">
-            <div class="tab active">Meus Rascunhos</div>
-            <div class="tab">Pautas / Ideias</div>
-            <div class="tab">Histórico Publicado</div>
+            <div class="tab active" data-target="draftsContainer">Meus Rascunhos</div>
+            <div class="tab" data-target="ideiasContainer">Pautas / Ideias</div>
+            <div class="tab" data-target="publishedContainer">Histórico Publicado</div>
         </div>
 
-        <!-- Grid de Rascunhos -->
-        <div class="drafts-grid" id="draftsContainer">
-            <!-- Rascunhos preenchidos via JS -->
+        <!-- Aba 1: Rascunhos -->
+        <div class="drafts-grid" id="draftsContainer"></div>
+
+        <!-- Aba 2: Pautas e Ideias -->
+        <div class="ideias-wrapper" id="ideiasContainer">
+            <div class="ideias-header">
+                <input type="text" id="ideiaInput" placeholder="Digite uma nova ideia ou tema para conteúdo..." onkeypress="handleIdeiaEnter(event)">
+                <button class="btn-ideia" onclick="adicionarIdeia()">Adicionar</button>
+                <button class="btn-ai-brainstorm" onclick="gerarIdeiasIA()">
+                    <i data-lucide="sparkles" style="width: 18px;"></i> Brainstorm IA
+                </button>
+            </div>
+
+            <div class="kanban-board">
+                <div class="kanban-column">
+                    <h3>
+                        <i data-lucide="lightbulb" style="width: 18px; color: #888;"></i> 
+                        Banco de Ideias 
+                        <span class="badge-count" id="countIdeias">0</span>
+                    </h3>
+                    <div id="listIdeias"></div>
+                </div>
+                <div class="kanban-column">
+                    <h3 style="color: var(--brand-color);">
+                        <i data-lucide="target" style="width: 18px;"></i> 
+                        Pautas Aprovadas 
+                        <span class="badge-count brand" id="countPautas">0</span>
+                    </h3>
+                    <div id="listPautas"></div>
+                </div>
+            </div>
         </div>
+
+        <!-- Aba 3: Histórico Publicado -->
+        <div class="drafts-grid" id="publishedContainer" style="display: none;"></div>
 
     </main>
 
     <script>
+        // DECLARA AS VARIÁVEIS GLOBAIS ANTES DE CHAMAR AS FUNÇÕES
+        let contentIdeas = JSON.parse(localStorage.getItem('propositum_ideas')) ||[];
+
         lucide.createIcons();
 
-        // 1. Carrega os dados da URL e do LocalStorage
+        // Carrega Entidade
         const urlParams = new URLSearchParams(window.location.search);
         const startupId = urlParams.get('startupId');
         
         const profiles = JSON.parse(localStorage.getItem('propositum_profiles')) ||[];
         const activeProfile = profiles.find(p => p.id === startupId);
 
-        if (!activeProfile) {
-            window.location.href = 'dashboard.html';
-        }
+        if (!activeProfile) window.location.href = 'dashboard.html';
 
-        // 2. Aplica a Identidade Visual na Página
         document.getElementById('entityName').innerText = activeProfile.name;
         document.getElementById('entityUrl').innerText = activeProfile.website || 'Sem site cadastrado';
         
-        // Aplica a cor da marca no Holofote (Glow) e bordas
         if(activeProfile.brandColor) {
             document.documentElement.style.setProperty('--brand-color', activeProfile.brandColor);
         }
@@ -161,18 +240,59 @@
             logoContainer.innerText = activeProfile.name.charAt(0).toUpperCase();
         }
 
-        // 3. Botão Criar Novo
         document.getElementById('btnCreateNew').onclick = () => {
             window.location.href = `editor.html?startupId=${activeProfile.id}`;
         };
 
-        // 4. Carrega os Rascunhos
+        // --- SISTEMA DE MÉTRICAS (CALCULO REAL) ---
+        function calculateMetrics() {
+            const drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+            const entityDrafts = drafts.filter(d => d.entityId === activeProfile.id && d.status === 'Publicado');
+            
+            const timeFilter = document.getElementById('timeFilter').value;
+            const now = new Date();
+            
+            let totalImp = 0;
+            let totalEng = 0;
+
+            entityDrafts.forEach(d => {
+                if (!d.publishedAt) return;
+                const pubDate = new Date(d.publishedAt);
+                const diffDays = (now - pubDate) / (1000 * 60 * 60 * 24);
+                
+                if (timeFilter === 'all' || diffDays <= parseInt(timeFilter)) {
+                    totalImp += parseInt(d.impressions) || 0;
+                    totalEng += parseInt(d.engagement) || 0;
+                }
+            });
+
+            document.getElementById('metricImpressions').innerText = formatNumber(totalImp);
+            document.getElementById('metricEngagement').innerText = formatNumber(totalEng);
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return num.toString();
+        }
+
+        function updateDraftMetric(draftId, field, value) {
+            let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+            const index = drafts.findIndex(d => d.id === draftId);
+            if(index > -1) {
+                drafts[index][field] = parseInt(value) || 0;
+                localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+                calculateMetrics(); 
+            }
+        }
+
+        // --- ABA DE RASCUNHOS ---
         function renderDrafts() {
             const container = document.getElementById('draftsContainer');
             const allDrafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
             
-            // Filtra só os rascunhos desta marca
-            const entityDrafts = allDrafts.filter(d => d.entityId === activeProfile.id).reverse(); // Mais novos primeiro
+            // Só exibe os que NÃO estão publicados
+            const entityDrafts = allDrafts.filter(d => d.entityId === activeProfile.id && d.status !== 'Publicado').reverse();
 
             if (entityDrafts.length === 0) {
                 container.innerHTML = `
@@ -188,23 +308,76 @@
 
             container.innerHTML = '';
             entityDrafts.forEach(draft => {
-                // Formata a data
                 const dateObj = new Date(draft.lastEdited);
                 const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 
                 container.innerHTML += `
-                    <div class="draft-card" onclick="openDraft('${draft.id}')">
-                        <div class="draft-cover">
+                    <div class="draft-card">
+                        <div class="draft-cover" onclick="openDraft('${draft.id}')">
                             <div class="badge-status">${draft.status || 'Rascunho'}</div>
-                            ${draft.previewImg 
-                                ? `<img src="${draft.previewImg}">` 
-                                : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
+                            ${draft.previewImg ? `<img src="${draft.previewImg}">` : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
                         </div>
                         <div class="draft-info">
                             <div class="draft-title">${draft.title || 'Carrossel sem título'}</div>
                             <div class="draft-meta">
-                                <span>Editado em ${dateStr}</span>
-                                <i data-lucide="arrow-right" style="width:14px;"></i>
+                                <span>Última edição: ${dateStr}</span>
+                            </div>
+                            <button class="btn-card btn-publish" onclick="publicarRascunho(event, '${draft.id}')">
+                                <i data-lucide="send" style="width: 14px;"></i> Marcar como Publicado
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        // --- ABA DE PUBLICADOS (HISTÓRICO) ---
+        function renderPublished() {
+            const container = document.getElementById('publishedContainer');
+            const allDrafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+            
+            // Filtra só os PUBLICADOS
+            const publishedDrafts = allDrafts.filter(d => d.entityId === activeProfile.id && d.status === 'Publicado').reverse();
+
+            if (publishedDrafts.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;">
+                        <i data-lucide="check-circle" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i>
+                        <h3 style="margin-bottom: 8px;">Nenhum post publicado</h3>
+                        <p style="color: #666;">Marque um rascunho como publicado para começar a rastrear métricas.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = '';
+            publishedDrafts.forEach(draft => {
+                const dateObj = new Date(draft.publishedAt);
+                const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+                container.innerHTML += `
+                    <div class="draft-card">
+                        <div class="draft-cover" onclick="openDraft('${draft.id}')" title="Visualizar Post">
+                            <div class="badge-status" style="background: var(--brand-color); color: #000;">Publicado</div>
+                            ${draft.previewImg ? `<img src="${draft.previewImg}">` : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
+                        </div>
+                        <div class="draft-info">
+                            <div class="draft-title" style="margin-bottom: 4px;">${draft.title || 'Carrossel Publicado'}</div>
+                            <div class="draft-meta" style="margin-bottom: 0;">
+                                <span>Publicado em ${dateStr}</span>
+                            </div>
+                            
+                            <div class="metrics-inputs">
+                                <div>
+                                    <label><i data-lucide="eye" style="width: 12px;"></i> Impressões</label>
+                                    <input type="number" value="${draft.impressions || 0}" onchange="updateDraftMetric('${draft.id}', 'impressions', this.value)" placeholder="Ex: 5000">
+                                </div>
+                                <div>
+                                    <label><i data-lucide="mouse-pointer-click" style="width: 12px;"></i> Engajamento</label>
+                                    <input type="number" value="${draft.engagement || 0}" onchange="updateDraftMetric('${draft.id}', 'engagement', this.value)" placeholder="Ex: 150">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -213,12 +386,185 @@
             lucide.createIcons();
         }
 
-        // 5. Função para abrir um rascunho no Editor
+        // Publicar Rascunho
+        window.publicarRascunho = function(e, draftId) {
+            e.stopPropagation();
+            let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+            const index = drafts.findIndex(d => d.id === draftId);
+            if(index > -1) {
+                drafts[index].status = 'Publicado';
+                drafts[index].publishedAt = new Date().toISOString();
+                drafts[index].impressions = 0;
+                drafts[index].engagement = 0;
+                localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+                renderDrafts();
+                renderPublished();
+                calculateMetrics();
+            }
+        }
+
+        // Abre Editor
         window.openDraft = function(draftId) {
             window.location.href = `editor.html?startupId=${activeProfile.id}&draftId=${draftId}`;
         }
 
+        // --- SISTEMA DE IDEIAS E PAUTAS ---
+        function renderIdeias() {
+            const listIdeias = document.getElementById('listIdeias');
+            const listPautas = document.getElementById('listPautas');
+            listIdeias.innerHTML = '';
+            listPautas.innerHTML = '';
+
+            let countI = 0, countP = 0;
+            const entityIdeas = contentIdeas.filter(i => i.entityId === activeProfile.id).reverse();
+
+            entityIdeas.forEach(item => {
+                if (item.status === 'ideia') {
+                    countI++;
+                    listIdeias.innerHTML += `
+                        <div class="ideia-card">
+                            <div class="ideia-text">${item.text}</div>
+                            <div class="ideia-actions">
+                                <button class="btn-card btn-approve" onclick="mudarStatus('${item.id}', 'pauta')">
+                                    <i data-lucide="check" style="width: 14px;"></i> Aprovar
+                                </button>
+                                <button class="btn-card btn-delete" onclick="deletarIdeia('${item.id}')">
+                                    <i data-lucide="trash-2" style="width: 14px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else if (item.status === 'pauta') {
+                    countP++;
+                    listPautas.innerHTML += `
+                        <div class="ideia-card" style="border-left: 3px solid var(--brand-color);">
+                            <div class="ideia-text">${item.text}</div>
+                            <div class="ideia-actions">
+                                <button class="btn-card btn-generate" onclick="enviarParaStudio('${item.text}')">
+                                    <i data-lucide="zap" style="width: 14px;"></i> Gerar Carrossel
+                                </button>
+                                <button class="btn-card btn-delete" title="Voltar para ideias" onclick="mudarStatus('${item.id}', 'ideia')">
+                                    <i data-lucide="corner-up-left" style="width: 14px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('countIdeias').innerText = countI;
+            document.getElementById('countPautas').innerText = countP;
+            
+            const metricEl = document.getElementById('metricPautas');
+            if (metricEl) {
+                metricEl.innerHTML = `${countP} <span style="color:#666; font-size:14px; margin-left:12px; font-weight:600;">Pendente(s)</span>`;
+            }
+
+            lucide.createIcons();
+        }
+
+        function adicionarIdeia(textoIA = null) {
+            const input = document.getElementById('ideiaInput');
+            const text = textoIA || input.value.trim();
+            if (!text) return;
+
+            contentIdeas.push({
+                id: 'idea_' + Date.now() + Math.floor(Math.random() * 1000),
+                entityId: activeProfile.id,
+                text: text,
+                status: 'ideia',
+                createdAt: new Date().toISOString()
+            });
+
+            localStorage.setItem('propositum_ideas', JSON.stringify(contentIdeas));
+            input.value = '';
+            renderIdeias();
+        }
+
+        function handleIdeiaEnter(e) { if (e.key === 'Enter') adicionarIdeia(); }
+
+        function mudarStatus(id, novoStatus) {
+            const index = contentIdeas.findIndex(i => i.id === id);
+            if (index > -1) {
+                contentIdeas[index].status = novoStatus;
+                localStorage.setItem('propositum_ideas', JSON.stringify(contentIdeas));
+                renderIdeias();
+            }
+        }
+
+        function deletarIdeia(id) {
+            contentIdeas = contentIdeas.filter(i => i.id !== id);
+            localStorage.setItem('propositum_ideas', JSON.stringify(contentIdeas));
+            renderIdeias();
+        }
+
+        async function gerarIdeiasIA() {
+            const apiKey = localStorage.getItem('propositum_api_key');
+            if (!apiKey) {
+                alert("Atenção: Configure sua chave da API do Gemini nas configurações globais (Dashboard) para usar a Inteligência Artificial.");
+                return;
+            }
+
+            const btn = document.querySelector('.btn-ai-brainstorm');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width: 18px;"></i> Processando...';
+            btn.disabled = true;
+
+            try {
+                const contexto = activeProfile.vision ? `Tom de voz e regras da marca: ${activeProfile.vision}` : '';
+                const prompt = `Aja como o estrategista de conteúdo sênior da marca "${activeProfile.name}". ${contexto}. Gere exatamente 3 ideias criativas, diretas e curtas (máximo 1 linha cada) de pautas focadas em conversão e autoridade para um carrossel no Instagram. Retorne APENAS as ideias, sem numeração, sem markdown e separadas por quebra de linha.`;
+
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: prompt }] }] }) });
+                if (!response.ok) throw new Error("Erro na API Key");
+
+                const data = await response.json();
+                const text = data.candidates[0].content.parts[0].text;
+                
+                const ideias = text.split('\n').filter(i => i.trim() !== '');
+                ideias.forEach(ideia => adicionarIdeia(ideia.replace(/^[-*0-9.]*\s*/, '').trim()));
+
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao conectar com a IA. Verifique sua chave API.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        function enviarParaStudio(tema) {
+            window.location.href = `editor.html?startupId=${activeProfile.id}&theme=${encodeURIComponent(tema)}`;
+        }
+
+        // --- INICIALIZAÇÃO E ABAS ---
         renderDrafts();
+        renderPublished();
+        renderIdeias();
+        calculateMetrics();
+
+        const tabs = document.querySelectorAll('.tab');
+        const sections = {
+            'draftsContainer': document.getElementById('draftsContainer'),
+            'ideiasContainer': document.getElementById('ideiasContainer'),
+            'publishedContainer': document.getElementById('publishedContainer')
+        };
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Esconde todas as seções
+                Object.values(sections).forEach(sec => sec.style.display = 'none');
+                
+                // Mostra a seção alvo
+                const targetId = tab.getAttribute('data-target');
+                sections[targetId].style.display = targetId === 'ideiasContainer' ? 'block' : 'grid';
+            });
+        });
+
     </script>
 </body>
 </html>

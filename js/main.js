@@ -8,6 +8,11 @@ import { downloadCarousel } from './modules/export.js';
 
 const urlParams = new URLSearchParams(window.location.search);
 const startupId = urlParams.get('startupId');
+const themeParam = urlParams.get('theme'); 
+
+if (themeParam) {
+    document.getElementById('themeInput').value = decodeURIComponent(themeParam);
+}
 
 if (startupId) {
     const profiles = JSON.parse(localStorage.getItem('propositum_profiles')) ||[];
@@ -168,7 +173,7 @@ document.getElementById('bgColor').addEventListener('input', (e) => updateColors
 document.getElementById('textColor').addEventListener('input', (e) => updateColors(document.getElementById('bgColor').value, document.getElementById('brandColor').value, e.target.value));
 
 document.getElementById('btnGenerate').addEventListener('click', async () => {
-    const apiKey = document.getElementById('apiKeyInput').value.trim();
+    const apiKey = localStorage.getItem('propositum_api_key') || '';
     const themeStr = document.getElementById('themeInput').value.trim();
     const template = document.getElementById('templateSelect').value;
     const btn = document.getElementById('btnGenerate');
@@ -294,4 +299,15 @@ if (draftIdParam) {
         
         console.log("Rascunho carregado com sucesso!");
     }
+}
+
+// ==========================================
+// AUTO-GERAÇÃO (Quando vem da tela de Pautas)
+// ==========================================
+if (themeParam && !draftIdParam) {
+    // Aguarda meio segundo para a UI estabilizar e dispara a IA automaticamente
+    setTimeout(() => {
+        const btnGenerate = document.getElementById('btnGenerate');
+        if (btnGenerate) btnGenerate.click();
+    }, 600);
 }

@@ -253,3 +253,43 @@ function goToEntity(id) {
 if(document.getElementById('cardsContainer')) {
     renderProfiles();
 }
+
+/* --- CONFIGURAÇÕES GLOBAIS (API KEY) --- */
+function openSettingsModal() {
+    const apiKey = localStorage.getItem('propositum_api_key') || '';
+    document.getElementById('globalApiKey').value = apiKey;
+    
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+    }
+}
+
+function closeSettingsModal() {
+    const modal = document.getElementById('settingsModal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 400); 
+    }
+}
+
+function saveSettings() {
+    const key = document.getElementById('globalApiKey').value.trim();
+    localStorage.setItem('propositum_api_key', key);
+    
+    const btn = document.getElementById('btnSaveSettings');
+    const originalText = btn.innerText;
+    
+    btn.innerHTML = '<i data-lucide="check" style="width: 18px; display: inline-block; vertical-align: middle;"></i> Salvo';
+    btn.style.background = "#34c759"; 
+    btn.style.color = "#fff";
+    lucide.createIcons();
+    
+    setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.background = "#fff";
+        btn.style.color = "#000";
+        closeSettingsModal();
+    }, 1200);
+}
