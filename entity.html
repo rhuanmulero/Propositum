@@ -391,41 +391,47 @@
         }
 
         // --- ABA DE RASCUNHOS ---
-        function renderDrafts() {
-            const container = document.getElementById('draftsContainer');
-            const allDrafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
-            
-            const entityDrafts = allDrafts.filter(d => d.entityId === activeProfile.id && d.status !== 'Publicado' && d.status !== 'Agendado').reverse();
+function renderDrafts() {
+    const container = document.getElementById('draftsContainer');
+    const allDrafts = JSON.parse(localStorage.getItem('propositum_drafts')) || [];
+    
+    const entityDrafts = allDrafts.filter(d => d.entityId === activeProfile.id && d.status !== 'Publicado' && d.status !== 'Agendado').reverse();
 
-            if (entityDrafts.length === 0) {
-                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;"><i data-lucide="file-edit" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i><h3 style="margin-bottom: 8px;">Nenhum rascunho encontrado</h3><p style="color: #666;">Crie seu primeiro carrossel no Studio para vê-lo aqui.</p></div>`;
-                lucide.createIcons();
-                return;
-            }
+    if (entityDrafts.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;"><i data-lucide="file-edit" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i><h3 style="margin-bottom: 8px;">Nenhum rascunho encontrado</h3><p style="color: #666;">Crie seu primeiro carrossel no Studio para vê-lo aqui.</p></div>`;
+        lucide.createIcons();
+        return;
+    }
 
-            container.innerHTML = '';
-            entityDrafts.forEach(draft => {
-                const dateObj = new Date(draft.lastEdited);
-                const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    container.innerHTML = '';
+    entityDrafts.forEach(draft => {
+        const dateObj = new Date(draft.lastEdited);
+        const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 
-                container.innerHTML += `
-                    <div class="draft-card">
-                        <div class="draft-cover" onclick="openDraft('${draft.id}')">
-                            <div class="badge-status">${draft.status || 'Rascunho'}</div>
-                            ${draft.previewImg ? `<img src="${draft.previewImg}">` : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
-                        </div>
-                        <div class="draft-info">
-                            <div class="draft-title">${draft.title || 'Carrossel sem título'}</div>
-                            <div class="draft-meta"><span>Última edição: ${dateStr}</span></div>
-                            <button class="btn-card btn-publish" onclick="openPublishModal(event, '${draft.id}')">
-                                <i data-lucide="send" style="width: 14px;"></i> Marcar como Publicado
-                            </button>
-                        </div>
+        container.innerHTML += `
+            <div class="draft-card">
+                <div class="draft-cover" onclick="openDraft('${draft.id}')">
+                    <div class="badge-status">${draft.status || 'Rascunho'}</div>
+                    ${draft.previewImg ? `<img src="${draft.previewImg}">` : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
+                </div>
+                <div class="draft-info">
+                    <div class="draft-title">${draft.title || 'Carrossel sem título'}</div>
+                    <div class="draft-meta"><span>Última edição: ${dateStr}</span></div>
+                    
+                    <div style="display: flex; gap: 8px; margin-top: auto;">
+                        <button class="btn-card btn-publish" onclick="openPublishModal(event, '${draft.id}')" style="flex: 1;">
+                            <i data-lucide="send" style="width: 14px;"></i> Publicar
+                        </button>
+                        <button class="btn-card" onclick="deleteDraft(event, '${draft.id}')" style="background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); width: 42px; height: 42px; padding: 0;" title="Excluir Rascunho">
+                            <i data-lucide="trash-2" style="width: 16px;"></i>
+                        </button>
                     </div>
-                `;
-            });
-            lucide.createIcons();
-        }
+                </div>
+            </div>
+        `;
+    });
+    lucide.createIcons();
+}
 
         // --- ABA DE PUBLICADOS (HISTÓRICO) ---
         function renderPublished() {
@@ -682,6 +688,26 @@
             });
         });
 
-    </script>
+        window.deleteDraft = function(e, draftId) {
+            // Impede que o clique no botão abra o editor (porque o botão está dentro do card)
+            e.stopPropagation();
+
+            if (!confirm("Tem certeza que deseja excluir este carrossel permanentemente?")) return;
+
+            // 1. Puxa os dados atuais
+            let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) || [];
+            
+            // 2. Filtra removendo o ID selecionado
+            drafts = drafts.filter(d => d.id !== draftId);
+            
+            // 3. Salva de volta
+            localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+
+            // 4. Atualiza a tela e métricas
+            renderDrafts();
+            renderPublished();
+            calculateMetrics();
+        };
+</script>
 </body>
 </html>

@@ -242,7 +242,7 @@ document.getElementById('btnSaveDraft').addEventListener('click', async () => {
     if (firstSlide) {
         try {
             // Tira print rápido em qualidade baixa só para a vitrine
-            previewBase64 = await window.htmlToImage.toPng(firstSlide, { pixelRatio: 0.5 }); 
+            previewBase64 = await window.htmlToImage.toPng(firstSlide, { pixelRatio: 0.2, quality: 0.5 }); 
         } catch (e) {
             console.log("Erro ao gerar capa, salvando sem capa.", e);
         }
