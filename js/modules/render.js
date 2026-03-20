@@ -31,29 +31,29 @@ function getBackgroundPatterns(template) {
     let html = '';
     switch(template) {
         case 'layout-tech':
-            html += `<div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 40px 40px; z-index: 1; pointer-events: none;"></div>`;
-            html += `<div style="position: absolute; top: -10%; left: -10%; width: 70%; height: 70%; background: var(--brand-color); opacity: 0.15; filter: blur(140px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; width: 1080px; height: 1350px; left: 0; top: 0; background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px); background-size: 40px 40px; z-index: 1;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; top: -100px; left: -100px; width: 800px; height: 800px; background: var(--brand-color); opacity: 0.15; filter: blur(140px); z-index: 1; border-radius: 50%;"></div>`;
             break;
         case 'layout-corp':
-            html += `<div style="position: absolute; inset: 0; background: repeating-linear-gradient(45deg, rgba(var(--text-rgb), 0.02) 0px, rgba(var(--text-rgb), 0.02) 2px, transparent 2px, transparent 12px); z-index: 1; pointer-events: none;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; width: 1080px; height: 1350px; left: 0; top: 0; background: repeating-linear-gradient(45deg, rgba(var(--text-rgb), 0.02) 0px, rgba(var(--text-rgb), 0.02) 2px, transparent 2px, transparent 12px); z-index: 1;"></div>`;
             break;
         case 'layout-minimal':
-            html += `<div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(var(--text-rgb), 0.08) 2px, transparent 2px); background-size: 30px 30px; z-index: 1; pointer-events: none;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; width: 1080px; height: 1350px; left: 0; top: 0; background-image: radial-gradient(rgba(var(--text-rgb), 0.08) 2px, transparent 2px); background-size: 30px 30px; z-index: 1;"></div>`;
             break;
         case 'layout-neon':
-            html += `<div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(var(--brand-rgb), 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--brand-rgb), 0.15) 1px, transparent 1px); background-size: 50px 50px; z-index: 1; pointer-events: none;"></div>`;
-            html += `<div style="position: absolute; bottom: -10%; right: -10%; width: 80%; height: 80%; background: var(--brand-color); opacity: 0.2; filter: blur(150px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; width: 1080px; height: 1350px; left: 0; top: 0; background-image: linear-gradient(rgba(var(--brand-rgb), 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--brand-rgb), 0.15) 1px, transparent 1px); background-size: 50px 50px; z-index: 1;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; bottom: -100px; right: -100px; width: 800px; height: 800px; background: var(--brand-color); opacity: 0.2; filter: blur(150px); z-index: 1; border-radius: 50%;"></div>`;
             break;
         case 'layout-editorial':
-            html += `<div style="position: absolute; inset: 0; background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.15) 150%); z-index: 1; pointer-events: none;"></div>`;
-            html += `<div style="position: absolute; top: 40px; bottom: 40px; left: 40px; right: 40px; border: 1px solid rgba(var(--text-rgb), 0.1); z-index: 1; pointer-events: none;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; width: 1080px; height: 1350px; left: 0; top: 0; background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.15) 150%); z-index: 1;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; top: 40px; left: 40px; width: 1000px; height: 1270px; border: 1px solid rgba(var(--text-rgb), 0.1); z-index: 1;"></div>`;
             break;
         case 'layout-glass':
-            html += `<div style="position: absolute; top: 10%; left: 10%; width: 500px; height: 500px; background: var(--brand-color); opacity: 0.35; filter: blur(120px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
-            html += `<div style="position: absolute; bottom: 10%; right: 10%; width: 400px; height: 400px; background: #ffffff; opacity: 0.15; filter: blur(100px); z-index: 1; pointer-events: none; border-radius: 50%;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; top: 100px; left: 100px; width: 500px; height: 500px; background: var(--brand-color); opacity: 0.35; filter: blur(120px); z-index: 1; border-radius: 50%;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; bottom: 100px; right: 100px; width: 400px; height: 400px; background: #ffffff; opacity: 0.15; filter: blur(100px); z-index: 1; border-radius: 50%;"></div>`;
             break;
         case 'layout-bold':
-            html += `<div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(var(--text-rgb), 0.12) 4px, transparent 4px); background-size: 20px 20px; z-index: 1; pointer-events: none;"></div>`;
+            html += `<div class="draggable shape-element texture-element" style="position: absolute; width: 1080px; height: 1350px; left: 0; top: 0; background-image: radial-gradient(rgba(var(--text-rgb), 0.12) 4px, transparent 4px); background-size: 20px 20px; z-index: 1;"></div>`;
             break;
         default:
             break;

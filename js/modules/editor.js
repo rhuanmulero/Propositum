@@ -399,6 +399,19 @@ export function initEditorEvents() {
     document.getElementById('btnAddImage')?.addEventListener('click', () => {
         addElementToActiveSlide(`<img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600&auto=format&fit=crop" class="draggable editable-img new-element image-element" crossorigin="anonymous" style="width: 400px; height: 400px; object-fit: cover; border-radius: 20px; position: absolute; z-index: 1000;">`);
     });
+    
+    document.getElementById('btnAddTexture')?.addEventListener('click', () => {
+        const patterns =[
+            `radial-gradient(var(--text-color) 3px, transparent 3px)`,
+            `linear-gradient(45deg, var(--text-color) 25%, transparent 25%, transparent 50%, var(--text-color) 50%, var(--text-color) 75%, transparent 75%, transparent)`,
+            `linear-gradient(var(--text-color) 2px, transparent 2px), linear-gradient(90deg, var(--text-color) 2px, transparent 2px)`
+        ];
+        // Sorteia entre 3 texturas diferentes na hora de criar
+        const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
+        const size = randomPattern.includes('45deg') ? '20px 20px' : '40px 40px';
+        
+        addElementToActiveSlide(`<div class="draggable new-element shape-element texture-element" style="width: 400px; height: 400px; background-image: ${randomPattern}; background-size: ${size}; opacity: 0.15; position: absolute; z-index: 1;"></div>`);
+    });
 
     document.addEventListener('keydown', (e) => {
         const activeTag = document.activeElement.tagName.toLowerCase();

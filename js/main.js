@@ -187,8 +187,8 @@ document.querySelectorAll('.template-card').forEach(card => {
             'layout-editorial': { bg: '#f4f0ec', brand: '#8b4513', text: '#222222' },
             'layout-glass': { bg: '#0f172a', brand: '#3b82f6', text: '#ffffff' },
             'layout-bold': { bg: '#fbbf24', brand: '#000000', text: '#000000' }
-        };
-        if (defaultColors[val]) {
+        };a
+        if (defaultColors[val] && !AppState.activeProfile) {
             updateColors(defaultColors[val].bg, defaultColors[val].brand, defaultColors[val].text);
         }
     });

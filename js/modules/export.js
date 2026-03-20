@@ -5,6 +5,15 @@ export async function downloadCarousel() {
     deselectElement(); 
     document.getElementById('elementToolbar').style.display = 'none';
 
+    const fixStyle = document.createElement('style');
+    fixStyle.innerHTML = `
+        .slide * { 
+            backdrop-filter: none !important; 
+            -webkit-backdrop-filter: none !important; 
+        }
+    `;
+    document.head.appendChild(fixStyle);
+
     const modal = document.getElementById('exportModal');
     const progressBar = document.getElementById('exportProgressBar');
     modal.classList.add('show');
@@ -13,10 +22,9 @@ export async function downloadCarousel() {
     const canvasPlane = document.getElementById('canvasPlane');
     const originalTransform = canvasPlane.style.transform;
     
-    // Reseta escala para 1:1 e garante que está no topo antes do print
     canvasPlane.style.transform = 'translate(0px, 0px) scale(1)';
     
-    // Espera importante (1.5 segundos) para que o DOM recalcule a resolução nativa e texturas
+
     await new Promise(r => setTimeout(r, 1500));
 
     const slides = document.querySelectorAll('.slide');
@@ -48,5 +56,6 @@ export async function downloadCarousel() {
     }
     
     canvasPlane.style.transform = originalTransform;
+    document.head.removeChild(fixStyle); 
     setTimeout(() => modal.classList.remove('show'), 500);
 }

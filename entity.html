@@ -598,7 +598,8 @@ function renderDrafts() {
                     listIdeias.innerHTML += `<div class="ideia-card"><div class="ideia-text">${item.text}</div><div class="ideia-actions"><button class="btn-card btn-approve" onclick="mudarStatus('${item.id}', 'pauta')"><i data-lucide="check" style="width: 14px;"></i> Aprovar</button><button class="btn-card btn-delete" onclick="deletarIdeia('${item.id}')"><i data-lucide="trash-2" style="width: 14px;"></i></button></div></div>`;
                 } else if (item.status === 'pauta') {
                     countP++;
-                    listPautas.innerHTML += `<div class="ideia-card" style="border-left: 3px solid var(--brand-color);"><div class="ideia-text">${item.text}</div><div class="ideia-actions"><button class="btn-card btn-generate" onclick="enviarParaStudio('${item.text}')"><i data-lucide="zap" style="width: 14px;"></i> Gerar Carrossel</button><button class="btn-card btn-delete" title="Voltar para ideias" onclick="mudarStatus('${item.id}', 'ideia')"><i data-lucide="corner-up-left" style="width: 14px;"></i></button></div></div>`;
+                    // CORREÇÃO: Passando o item.id no enviarParaStudio ao invés do item.text
+                    listPautas.innerHTML += `<div class="ideia-card" style="border-left: 3px solid var(--brand-color);"><div class="ideia-text">${item.text}</div><div class="ideia-actions"><button class="btn-card btn-generate" onclick="enviarParaStudio('${item.id}')"><i data-lucide="zap" style="width: 14px;"></i> Gerar Carrossel</button><button class="btn-card btn-delete" title="Voltar para ideias" onclick="mudarStatus('${item.id}', 'ideia')"><i data-lucide="corner-up-left" style="width: 14px;"></i></button></div></div>`;
                 }
             });
 
@@ -655,7 +656,12 @@ function renderDrafts() {
             }
         }
 
-        window.enviarParaStudio = function(tema) { window.location.href = `editor.html?startupId=${activeProfile.id}&theme=${encodeURIComponent(tema)}`; }
+        window.enviarParaStudio = function(id) { 
+            const item = contentIdeas.find(i => i.id === id);
+            if (item) {
+                window.location.href = `editor.html?startupId=${activeProfile.id}&theme=${encodeURIComponent(item.text)}`; 
+            }
+        }
 
         // --- INICIALIZAÇÃO E ABAS ---
         renderDrafts();
