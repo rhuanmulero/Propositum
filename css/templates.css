@@ -244,3 +244,42 @@
 .layout-bold.slide-cta p.desc { font-size: 34px; color: rgba(var(--text-rgb), 0.8); margin-bottom: 50px; font-weight: 600; }
 .layout-bold.slide-cta .btn-cta { background: var(--text-color); border: 4px solid var(--text-color); color: var(--bg-color); padding: 30px 50px; font-size: 38px; box-shadow: 10px 10px 0 var(--brand-color); border-radius: 0;}
 .layout-bold .swipe-btn { border: 4px solid var(--text-color); padding: 15px 35px; background: var(--bg-color); color: var(--text-color); box-shadow: 6px 6px 0 var(--text-color); font-family: 'Inter', sans-serif; font-size: 20px; text-transform: uppercase; font-weight: 900; border-radius: 0;}
+
+/* ====================================================
+   8. SAAS / 3D GLOW (Estilo RELPZ / Robô)
+   ==================================================== */
+.layout-saas-3d { font-family: 'Inter', sans-serif; }
+.layout-saas-3d.slide-cover .slide-bg-img { height: 100%; opacity: 0.3; mix-blend-mode: screen; filter: saturate(1.5); }
+.layout-saas-3d.slide-cover .slide-gradient { background: radial-gradient(circle at center, transparent 0%, var(--bg-color) 80%); }
+.layout-saas-3d.slide-cover .slide-content { justify-content: center; align-items: center; text-align: center; }
+.layout-saas-3d.slide-cover .tag { background: rgba(var(--brand-rgb), 0.1); border: 1px solid rgba(var(--brand-rgb), 0.5); color: #fff; padding: 10px 24px; border-radius: 50px; font-size: 20px; font-weight: 600; box-shadow: 0 0 20px rgba(var(--brand-rgb), 0.4); margin-bottom: 30px; }
+/* Texto com efeito de gradiente metálico inspirado na imagem "IA fácil" */
+.layout-saas-3d.slide-cover h1 { font-size: 90px; font-weight: 800; line-height: 1.1; background: linear-gradient(180deg, #ffffff 20%, rgba(255,255,255,0.5) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 10px 30px rgba(0,0,0,0.5); margin: 0; }
+.layout-saas-3d h2 { font-size: 60px; font-weight: 800; background: linear-gradient(90deg, #ffffff 0%, var(--brand-color) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
+.layout-saas-3d.slide-features .top-banner { border-radius: 24px; opacity: 0.9; }
+.layout-saas-3d.slide-process .step-num { background: linear-gradient(135deg, var(--brand-color), #4f46e5); color: #fff; border: none; box-shadow: 0 0 20px rgba(var(--brand-rgb), 0.6); }
+.layout-saas-3d .feature-card { transition: 0.3s; }
+.layout-saas-3d .feature-text h3 { color: #fff; font-size: 32px; font-weight: 700; }
+.layout-saas-3d .feature-text p { color: rgba(255,255,255,0.7); font-size: 24px; }
+.layout-saas-3d .swipe-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-radius: 100px; color: #fff; }
+
+/* ====================================================
+   9. HEX / CORP FLUIDO (Estilo Data Recintos)
+   ==================================================== */
+.layout-hex-corp { font-family: 'Inter', sans-serif; }
+.layout-hex-corp.slide-cover .slide-bg-img { height: 100%; opacity: 0.15; mix-blend-mode: overlay; }
+.layout-hex-corp.slide-cover .slide-gradient { background: linear-gradient(135deg, var(--bg-color) 20%, transparent 100%); }
+.layout-hex-corp.slide-cover .slide-content { justify-content: center; align-items: flex-start; text-align: left; }
+.layout-hex-corp.slide-cover .tag { background: #fff; color: var(--bg-color); padding: 12px 28px; border-radius: 12px; font-size: 22px; font-weight: 800; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+.layout-hex-corp.slide-cover h1 { font-size: 85px; font-weight: 900; line-height: 1.05; text-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+.layout-hex-corp h2 { font-size: 65px; font-weight: 900; line-height: 1.1; margin-bottom: 25px; text-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+.layout-hex-corp.slide-features .top-banner { border-radius: 16px; border: 4px solid #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+.layout-hex-corp.slide-features .feature-card { background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 15px 30px rgba(0,0,0,0.15); }
+.layout-hex-corp.slide-features .feature-text h3 { color: var(--brand-color); font-size: 30px; font-weight: 900; }
+.layout-hex-corp.slide-features .feature-text p { color: #444; font-size: 24px; font-weight: 500; }
+.layout-hex-corp.slide-process .step-card { background: #fff; border-radius: 16px; border: none; box-shadow: 0 15px 30px rgba(0,0,0,0.15); padding-top: 50px; }
+.layout-hex-corp.slide-process .step-num { background: var(--bg-color); color: #fff; width: 60px; height: 60px; top: -30px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); font-size: 28px; font-weight: 900;}
+.layout-hex-corp.slide-process h3 { color: var(--brand-color); font-weight: 900; }
+.layout-hex-corp.slide-process p { color: #555; }
+.layout-hex-corp .swipe-btn { background: #fff; color: var(--brand-color); border: none; font-weight: 800; box-shadow: 0 5px 15px rgba(0,0,0,0.2); border-radius: 12px; }

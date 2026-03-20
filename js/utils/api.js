@@ -1,6 +1,6 @@
 export function getMockData(template, topic, slideCount = 4) {
     const t = topic || "Seu Negócio";
-    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
+    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass', 'layout-saas-3d', 'layout-hex-corp'].includes(template);
     
     // Constrói os itens do meio dinamicamente até bater o limite
     const middleItems =[];
@@ -44,7 +44,7 @@ export async function fetchGeminiData(theme, template, apiKey, activeProfile, sl
         brandContext = `IMPORTANTE: Aja como a marca "${activeProfile.name}". Tom de voz e diretrizes: "${activeProfile.vision}". Crie os textos refletindo essa personalidade.`;
     }
 
-    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass'].includes(template);
+    const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass', 'layout-saas-3d', 'layout-hex-corp'].includes(template);
     
     const rules = isStructureA ? `
 BLOCOS PARA OS SLIDES DO MEIO:

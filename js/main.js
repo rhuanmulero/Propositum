@@ -186,8 +186,10 @@ document.querySelectorAll('.template-card').forEach(card => {
             'layout-neon': { bg: '#09090b', brand: '#ec4899', text: '#ffffff' },
             'layout-editorial': { bg: '#f4f0ec', brand: '#8b4513', text: '#222222' },
             'layout-glass': { bg: '#0f172a', brand: '#3b82f6', text: '#ffffff' },
-            'layout-bold': { bg: '#fbbf24', brand: '#000000', text: '#000000' }
-        };a
+            'layout-bold': { bg: '#fbbf24', brand: '#000000', text: '#000000' },
+            'layout-saas-3d': { bg: '#0b0c10', brand: '#8b5cf6', text: '#ffffff' },
+            'layout-hex-corp': { bg: '#0f766e', brand: '#042f2e', text: '#ffffff' }  
+        };
         if (defaultColors[val] && !AppState.activeProfile) {
             updateColors(defaultColors[val].bg, defaultColors[val].brand, defaultColors[val].text);
         }
