@@ -30,6 +30,9 @@
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
 
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite !important; }
+
         nav {
             position: relative; z-index: 10; padding: 30px 60px; display: flex; justify-content: space-between; align-items: center;
         }
@@ -57,6 +60,7 @@
         .input-dark { width: 100%; background: #111; border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 12px 16px; border-radius: 12px; font-size: 14px; font-family: 'Inter'; outline: none; transition: 0.3s; color-scheme: dark; }
         .input-dark:focus { border-color: var(--brand-color); }
         select.input-dark { cursor: pointer; width: auto; padding: 10px 16px; }
+        textarea.input-dark { resize: vertical; min-height: 120px; line-height: 1.6; padding: 16px; }
 
         /* Analytics Grid */
         .analytics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 60px; animation: fadeUp 0.8s forwards; animation-delay: 0.2s; opacity: 0; }
@@ -100,8 +104,23 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .btn-close { background: none; border: none; color: #888; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;}
         .btn-close:hover { color: #fff; transform: rotate(90deg); }
-        .btn-submit { width: 100%; background: #fff; color: #000; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-submit { 
+            width: 100%; background: #fff; color: #000; border: none; padding: 18px; border-radius: 16px; 
+            font-size: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; margin-top: 10px; 
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
         .btn-submit:hover { transform: scale(0.98); background: #e0e0e0; }
+
+        /* Formato Cards (Seleção de Roteiro vs Carrossel) */
+        .format-cards-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .format-card {
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 20px 16px; text-align: center; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .format-card:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+        .format-card.active { border-color: var(--brand-color); background: rgba(255,255,255,0.08); color: #fff; }
+        .format-card.active i { color: var(--brand-color); }
 
         @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
 
@@ -113,7 +132,7 @@
         .btn-ideia { background: var(--text); color: var(--bg); border: none; padding: 0 32px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; }
         .btn-ideia:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
         
-        .btn-ai-brainstorm { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.15); padding: 0 24px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+        .btn-ai-brainstorm { background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.15); padding: 0 24px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-ai-brainstorm:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
 
         .kanban-board { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
@@ -134,7 +153,6 @@
         .btn-delete:hover { color: #ff3b30; background: rgba(255,59,48,0.1); }
         .btn-publish { background: rgba(52, 199, 89, 0.1); color: #34c759; border: 1px solid rgba(52, 199, 89, 0.2); width: 100%; margin-top: auto; }
         .btn-publish:hover { background: #34c759; color: #fff; }
-
     </style>
 </head>
 <body>
@@ -194,6 +212,7 @@
 
         <div class="tabs">
             <div class="tab active" data-target="draftsContainer">Meus Rascunhos</div>
+            <div class="tab" data-target="scriptsContainer">Roteiros de Vídeo</div>
             <div class="tab" data-target="ideiasContainer">Pautas / Ideias</div>
             <div class="tab" data-target="publishedContainer">Histórico Publicado</div>
         </div>
@@ -201,7 +220,10 @@
         <!-- Aba 1: Rascunhos -->
         <div class="drafts-grid" id="draftsContainer"></div>
 
-        <!-- Aba 2: Pautas e Ideias -->
+        <!-- Aba 2: Roteiros de Vídeo -->
+        <div class="drafts-grid" id="scriptsContainer" style="display: none;"></div>
+
+        <!-- Aba 3: Pautas e Ideias -->
         <div class="ideias-wrapper" id="ideiasContainer">
             <div class="ideias-header">
                 <input type="text" id="ideiaInput" placeholder="Digite uma nova ideia ou tema para conteúdo..." onkeypress="handleIdeiaEnter(event)">
@@ -231,7 +253,7 @@
             </div>
         </div>
 
-        <!-- Aba 3: Histórico Publicado -->
+        <!-- Aba 4: Histórico Publicado -->
         <div class="drafts-grid" id="publishedContainer" style="display: none;"></div>
 
     </main>
@@ -240,11 +262,12 @@
     <div class="modal-overlay" id="publishModal">
         <div class="modal-content" style="max-width: 440px;">
             <div class="modal-header">
-                <h2 style="font-size: 24px; font-weight: 800;">Publicar Carrossel</h2>
+                <h2 style="font-size: 24px; font-weight: 800;">Publicar Conteúdo</h2>
                 <button class="btn-close" onclick="closePublishModal()"><i data-lucide="x" style="width: 24px;"></i></button>
             </div>
             
             <input type="hidden" id="publishDraftId">
+            <input type="hidden" id="publishType" value="carousel">
 
             <div style="margin-bottom: 24px;">
                 <label style="display: block; font-size: 12px; color: #888; text-transform: uppercase; font-weight: 700; margin-bottom: 8px;">Data e Hora da Publicação</label>
@@ -264,9 +287,96 @@
         </div>
     </div>
 
+    <!-- Modal: Configuração de Conteúdo (Carrossel vs Vídeo) -->
+    <div class="modal-overlay" id="contentSetupModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 style="font-size: 24px; font-weight: 800;">Preparar Conteúdo</h2>
+                <button class="btn-close" onclick="closeContentSetup()"><i data-lucide="x" style="width: 24px;"></i></button>
+            </div>
+            
+            <input type="hidden" id="setupPautaId">
+            <input type="hidden" id="setupFormat" value="carousel">
+
+            <div class="format-cards-container">
+                <div class="format-card active" data-value="carousel" onclick="selectFormat('carousel')">
+                    <i data-lucide="layout" style="width: 28px; height: 28px; margin-bottom: 8px;"></i>
+                    <div style="font-weight: 700; font-size: 15px;">Carrossel</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 4px;">Gerar no Studio</div>
+                </div>
+                <div class="format-card" data-value="video" onclick="selectFormat('video')">
+                    <i data-lucide="video" style="width: 28px; height: 28px; margin-bottom: 8px;"></i>
+                    <div style="font-weight: 700; font-size: 15px;">Roteiro</div>
+                    <div style="font-size: 12px; color: #888; margin-top: 4px;">Reels / TikTok</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 32px;">
+                <label style="display: block; font-size: 12px; color: #888; text-transform: uppercase; font-weight: 700; margin-bottom: 8px;">Contexto / Roteiro Base (Opcional)</label>
+                <textarea id="setupContext" class="input-dark" placeholder="Adicione instruções, roteiro base ou direcionamentos específicos para a Inteligência Artificial..."></textarea>
+            </div>
+
+            <button class="btn-submit" id="btnConfirmSetup" onclick="confirmContentSetup()">Ir para o Studio</button>
+        </div>
+    </div>
+
+    <!-- Modal: Leitura e Edição do Roteiro Gerado -->
+    <div class="modal-overlay" id="scriptViewModal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 style="font-size: 24px; font-weight: 800;"><i data-lucide="video" style="width: 24px; display:inline-block; vertical-align:middle; color:var(--brand-color); margin-right:8px;"></i> Roteiro de Vídeo</h2>
+                <button class="btn-close" onclick="closeScriptView()"><i data-lucide="x" style="width: 24px;"></i></button>
+            </div>
+            <input type="hidden" id="scriptViewId">
+            <input type="text" id="scriptTitle" class="input-dark" style="font-size: 18px; font-weight: 700; margin-bottom: 20px;">
+            
+            <textarea id="scriptBody" class="input-dark" style="height: 380px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; line-height: 1.7; padding: 24px; border-radius: 16px;"></textarea>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button class="btn-submit" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); flex: 1; margin-top: 0;" onclick="saveScript()">Salvar Alterações</button>
+                <button class="btn-submit" style="flex: 1.5; margin-top: 0;" onclick="copyScript()"><i data-lucide="copy" style="width:18px;"></i> Copiar Texto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Universais de UI -->
+    
+    <!-- Modal de Confirmação de Exclusão (Substitui confirm) -->
+    <div class="modal-overlay" id="deleteConfirmModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="margin-bottom: 24px;">
+                <i data-lucide="alert-triangle" style="width: 56px; height: 56px; color: #ff3b30; margin: 0 auto;"></i>
+            </div>
+            <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px;" id="deleteConfirmTitle">Excluir?</h2>
+            <p style="color: #888; font-size: 15px; line-height: 1.5; margin-bottom: 32px;" id="deleteConfirmMessage">
+                Tem certeza que deseja excluir?
+            </p>
+            
+            <div style="display: flex; gap: 12px;">
+                <button class="btn-submit" style="background: #1a1a1a; color: #fff; border: 1px solid rgba(255,255,255,0.1); margin-top: 0;" onclick="closeDeleteConfirm()">Cancelar</button>
+                <button class="btn-submit" style="background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); margin-top: 0;" onclick="executeDeleteAction()">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Aviso (Substitui alert) -->
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <div style="margin-bottom: 24px;">
+                <i data-lucide="info" style="width: 56px; height: 56px; color: var(--brand-color); margin: 0 auto;"></i>
+            </div>
+            <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px;">Aviso</h2>
+            <p style="color: #888; font-size: 15px; line-height: 1.5; margin-bottom: 32px;" id="alertMessage">
+                Mensagem de aviso aqui.
+            </p>
+            <button class="btn-submit" onclick="closeAlertModal()" style="margin-top: 0;">Entendi</button>
+        </div>
+    </div>
+
     <script>
         // DECLARA AS VARIÁVEIS GLOBAIS
         let contentIdeas = JSON.parse(localStorage.getItem('propositum_ideas')) ||[];
+        let itemToDelete = { id: null, type: null }; // Controle global de exclusão
 
         lucide.createIcons();
 
@@ -297,15 +407,93 @@
             window.location.href = `editor.html?startupId=${activeProfile.id}`;
         };
 
-        // Utilidade de Data pro Input (Ajusta o fuso pro formato correto do input)
         function getLocalIsoString(dateObj) {
             const tzOffset = dateObj.getTimezoneOffset() * 60000;
             return new Date(dateObj.getTime() - tzOffset).toISOString().slice(0, 16);
         }
 
+        // --- SISTEMA DE MODAIS UNIVERSAIS (ALERT E CONFIRM) ---
+        window.showAlert = function(msg) {
+            document.getElementById('alertMessage').innerText = msg;
+            const modal = document.getElementById('alertModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        window.closeAlertModal = function() {
+            const modal = document.getElementById('alertModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 400);
+        }
+
+        window.showDeleteConfirm = function(title, msg, id, type) {
+            itemToDelete = { id, type };
+            document.getElementById('deleteConfirmTitle').innerText = title;
+            document.getElementById('deleteConfirmMessage').innerText = msg;
+            const modal = document.getElementById('deleteConfirmModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        window.closeDeleteConfirm = function() {
+            const modal = document.getElementById('deleteConfirmModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 400);
+            itemToDelete = { id: null, type: null };
+        }
+
+        window.executeDeleteAction = function() {
+            if (!itemToDelete.id) return closeDeleteConfirm();
+
+            if (itemToDelete.type === 'draft') {
+                let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+                drafts = drafts.filter(d => d.id !== itemToDelete.id);
+                localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+                renderDrafts();
+                renderPublished();
+                calculateMetrics();
+            } else if (itemToDelete.type === 'script') {
+                let scripts = JSON.parse(localStorage.getItem('propositum_video_scripts')) ||[];
+                scripts = scripts.filter(s => s.id !== itemToDelete.id);
+                localStorage.setItem('propositum_video_scripts', JSON.stringify(scripts));
+                renderScripts();
+            }
+
+            closeDeleteConfirm();
+        }
+
+        // --- MOTOR DE ANÁLISE DE PERFORMANCE (NOVO) ---
+        function getTopPerformingContext() {
+            const drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+            const published = drafts.filter(d => d.entityId === activeProfile.id && d.status === 'Publicado');
+            
+            if (published.length === 0) return "";
+
+            // Calcula o Score: 1 Engajamento vale por 10 Impressões
+            const scored = published.map(d => {
+                const imp = parseInt(d.impressions) || 0;
+                const eng = parseInt(d.engagement) || 0;
+                return {
+                    title: d.title,
+                    score: imp + (eng * 10) 
+                };
+            }).filter(d => d.score > 0).sort((a, b) => b.score - a.score);
+
+            if (scored.length === 0) return "";
+
+            const top = scored.slice(0, 3);
+            const themes = top.map(t => `- "${t.title}"`).join('\n');
+            
+            return `[DADOS REAIS DE PERFORMANCE DA MARCA]
+Historicamente, os seguintes temas/formatos foram os que mais trouxeram engajamento e resultados:
+${themes}
+
+INSTRUÇÃO OBRIGATÓRIA: Baseie-se profundamente nos temas e ângulos acima que já foram validados pelo público para gerar este novo conteúdo, mas garanta que seja inédito.`;
+        }
+
         // --- SISTEMA DE MÉTRICAS C/ CRESCIMENTO ---
         function calculateMetrics() {
-            autoUpdateStatus(); // Verifica se algum Agendado já deu a hora de Publicar
+            autoUpdateStatus();
 
             const drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
             const entityDrafts = drafts.filter(d => d.entityId === activeProfile.id && (d.status === 'Publicado' || d.status === 'Agendado'));
@@ -319,8 +507,6 @@
             entityDrafts.forEach(d => {
                 if (!d.publishedAt) return;
                 const pubDate = new Date(d.publishedAt);
-                
-                // Ignora agendados no futuro para as métricas
                 if (pubDate > now) return;
 
                 const diffDays = (now - pubDate) / (1000 * 60 * 60 * 24);
@@ -334,7 +520,6 @@
                         currImp += parseInt(d.impressions) || 0;
                         currEng += parseInt(d.engagement) || 0;
                     } else if (diffDays <= days * 2) {
-                        // Calcula para o período anterior equivalente
                         prevImp += parseInt(d.impressions) || 0;
                         prevEng += parseInt(d.engagement) || 0;
                     }
@@ -372,7 +557,6 @@
             return num.toString();
         }
 
-        // Verifica o tempo pra ver se os Agendados já podem ser Publicados automaticamente
         function autoUpdateStatus() {
             let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
             let changed = false;
@@ -392,49 +576,49 @@
         }
 
         // --- ABA DE RASCUNHOS ---
-function renderDrafts() {
-    const container = document.getElementById('draftsContainer');
-    const allDrafts = JSON.parse(localStorage.getItem('propositum_drafts')) || [];
-    
-    const entityDrafts = allDrafts.filter(d => d.entityId === activeProfile.id && d.status !== 'Publicado' && d.status !== 'Agendado').reverse();
+        function renderDrafts() {
+            const container = document.getElementById('draftsContainer');
+            const allDrafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+            
+            const entityDrafts = allDrafts.filter(d => d.entityId === activeProfile.id && d.status !== 'Publicado' && d.status !== 'Agendado' && d.format !== 'video').reverse();
 
-    if (entityDrafts.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;"><i data-lucide="file-edit" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i><h3 style="margin-bottom: 8px;">Nenhum rascunho encontrado</h3><p style="color: #666;">Crie seu primeiro carrossel no Studio para vê-lo aqui.</p></div>`;
-        lucide.createIcons();
-        return;
-    }
+            if (entityDrafts.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;"><i data-lucide="file-edit" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i><h3 style="margin-bottom: 8px;">Nenhum rascunho encontrado</h3><p style="color: #666;">Crie seu primeiro carrossel no Studio para vê-lo aqui.</p></div>`;
+                lucide.createIcons();
+                return;
+            }
 
-    container.innerHTML = '';
-    entityDrafts.forEach(draft => {
-        const dateObj = new Date(draft.lastEdited);
-        const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+            container.innerHTML = '';
+            entityDrafts.forEach(draft => {
+                const dateObj = new Date(draft.lastEdited);
+                const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 
-        container.innerHTML += `
-            <div class="draft-card">
-                <div class="draft-cover" onclick="openDraft('${draft.id}')">
-                    <div class="badge-status">${draft.status || 'Rascunho'}</div>
-                    ${draft.previewImg ? `<img src="${draft.previewImg}">` : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
-                </div>
-                <div class="draft-info">
-                    <div class="draft-title">${draft.title || 'Carrossel sem título'}</div>
-                    <div class="draft-meta"><span>Última edição: ${dateStr}</span></div>
-                    
-                    <div style="display: flex; gap: 8px; margin-top: auto;">
-                        <button class="btn-card btn-publish" onclick="openPublishModal(event, '${draft.id}')" style="flex: 1;">
-                            <i data-lucide="send" style="width: 14px;"></i> Publicar
-                        </button>
-                        <button class="btn-card" onclick="deleteDraft(event, '${draft.id}')" style="background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); width: 42px; height: 42px; padding: 0;" title="Excluir Rascunho">
-                            <i data-lucide="trash-2" style="width: 16px;"></i>
-                        </button>
+                container.innerHTML += `
+                    <div class="draft-card">
+                        <div class="draft-cover" onclick="openDraft('${draft.id}')">
+                            <div class="badge-status">${draft.status || 'Rascunho'}</div>
+                            ${draft.previewImg ? `<img src="${draft.previewImg}">` : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
+                        </div>
+                        <div class="draft-info">
+                            <div class="draft-title">${draft.title || 'Carrossel sem título'}</div>
+                            <div class="draft-meta"><span>Última edição: ${dateStr}</span></div>
+                            
+                            <div style="display: flex; gap: 8px; margin-top: auto;">
+                                <button class="btn-card btn-publish" onclick="openPublishModal(event, '${draft.id}', 'carousel')" style="flex: 1;">
+                                    <i data-lucide="send" style="width: 14px;"></i> Publicar
+                                </button>
+                                <button class="btn-card" onclick="deleteDraft(event, '${draft.id}')" style="background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); width: 42px; height: 42px; padding: 0;" title="Excluir Rascunho">
+                                    <i data-lucide="trash-2" style="width: 16px;"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-        `;
-    });
-    lucide.createIcons();
-}
+                `;
+            });
+            lucide.createIcons();
+        }
 
-        // --- ABA DE PUBLICADOS (HISTÓRICO) ---
+        // --- ABA DE PUBLICADOS (HISTÓRICO DATA-DRIVEN) ---
         function renderPublished() {
             const container = document.getElementById('publishedContainer');
             const allDrafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
@@ -442,7 +626,7 @@ function renderDrafts() {
             const publishedDrafts = allDrafts.filter(d => d.entityId === activeProfile.id && (d.status === 'Publicado' || d.status === 'Agendado')).reverse();
 
             if (publishedDrafts.length === 0) {
-                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;"><i data-lucide="check-circle" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i><h3 style="margin-bottom: 8px;">Nenhum post publicado</h3><p style="color: #666;">Marque um rascunho como publicado para começar a rastrear métricas.</p></div>`;
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;"><i data-lucide="bar-chart-2" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i><h3 style="margin-bottom: 8px;">Nenhum histórico publicado</h3><p style="color: #666;">Os resultados dos seus posts aparecerão aqui para treinar a IA.</p></div>`;
                 lucide.createIcons();
                 return;
             }
@@ -451,22 +635,26 @@ function renderDrafts() {
             publishedDrafts.forEach(draft => {
                 const dateObj = new Date(draft.publishedAt);
                 const isFuture = dateObj > new Date();
-                
-                // Formato exigido pro input datetime-local
                 const dateInputFormat = getLocalIsoString(dateObj);
+                
+                const isVideo = draft.format === 'video';
+                const clickHandler = isVideo ? `openScriptView('${draft.id}')` : `openDraft('${draft.id}')`;
+                const formatIcon = isVideo ? `<i data-lucide="video" style="width: 18px; color: var(--brand-color); flex-shrink: 0;"></i>` : `<i data-lucide="layout" style="width: 18px; color: var(--brand-color); flex-shrink: 0;"></i>`;
 
                 container.innerHTML += `
-                    <div class="draft-card">
-                        <div class="draft-cover" onclick="openDraft('${draft.id}')" title="Visualizar Post">
-                            <div class="badge-status ${isFuture ? 'agendado' : 'publicado'}">${isFuture ? 'Agendado' : 'Publicado'}</div>
-                            ${draft.previewImg ? `<img src="${draft.previewImg}">` : `<i data-lucide="layout" style="width:48px; height:48px; color:#333;"></i>`}
-                        </div>
+                    <div class="draft-card" style="border-top: 4px solid var(--brand-color);">
                         <div class="draft-info">
-                            <div class="draft-title" style="margin-bottom: 16px;">${draft.title || 'Carrossel Publicado'}</div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                                <div class="draft-title" onclick="${clickHandler}" style="margin-bottom: 0; font-size: 18px; line-height: 1.4; flex: 1; padding-right: 12px; font-weight: 800; cursor: pointer; display: flex; gap: 10px; align-items: flex-start;">
+                                    ${formatIcon}
+                                    <span style="transition: 0.2s;" onmouseover="this.style.color='var(--brand-color)'" onmouseout="this.style.color='#fff'">${draft.title || 'Tema não definido'}</span>
+                                </div>
+                                <div class="badge-status ${isFuture ? 'agendado' : 'publicado'}" style="position: relative; inset: auto; flex-shrink: 0; margin: 0;">${isFuture ? 'Agendado' : 'Publicado'}</div>
+                            </div>
                             
                             <div class="metrics-inputs" style="grid-template-columns: 1fr; border: none; padding-top: 0; margin-bottom: 16px; margin-top: 0;">
                                 <div>
-                                    <label><i data-lucide="calendar" style="width: 12px;"></i> Data da Publicação</label>
+                                    <label><i data-lucide="calendar" style="width: 12px;"></i> Publicação</label>
                                     <input type="datetime-local" value="${dateInputFormat}" onchange="updateDraftDate('${draft.id}', this.value)">
                                 </div>
                             </div>
@@ -474,7 +662,7 @@ function renderDrafts() {
                             ${isFuture ? `
                                 <div style="background: rgba(255,159,10,0.1); padding: 16px; border-radius: 10px; border: 1px dashed rgba(255,159,10,0.3); text-align: center; color: #ff9f0a; font-size: 13px; font-weight: 600; margin-top: auto;">
                                     <i data-lucide="clock" style="width: 18px; margin-bottom: 8px;"></i><br>
-                                    As métricas estão bloqueadas até a data e horário agendados.
+                                    As métricas estão bloqueadas até a data agendada.
                                 </div>
                             ` : `
                                 <div class="metrics-inputs">
@@ -488,6 +676,12 @@ function renderDrafts() {
                                     </div>
                                 </div>
                             `}
+                            
+                            <div style="display: flex; gap: 8px; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+                                <button class="btn-card" onclick="deleteDraft(event, '${draft.id}')" style="background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); width: 100%; justify-content: center;" title="Excluir Histórico">
+                                    <i data-lucide="trash-2" style="width: 16px;"></i> Excluir do Histórico
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -495,7 +689,6 @@ function renderDrafts() {
             lucide.createIcons();
         }
 
-        // Funções de Update Direto do Card
         window.updateDraftDate = function(draftId, dateVal) {
             let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
             const index = drafts.findIndex(d => d.id === draftId);
@@ -522,14 +715,12 @@ function renderDrafts() {
         }
 
         // --- SISTEMA DE MODAL DE PUBLICAÇÃO ---
-        window.openPublishModal = function(e, draftId) {
+        window.openPublishModal = function(e, id, type = 'carousel') {
             e.stopPropagation();
-            document.getElementById('publishDraftId').value = draftId;
-            
-            // Preenche Data de Hoje com fuso correto
+            document.getElementById('publishDraftId').value = id;
+            document.getElementById('publishType').value = type;
             document.getElementById('publishDate').value = getLocalIsoString(new Date());
 
-            // Preenche Select de Pautas
             const selectPauta = document.getElementById('publishPauta');
             selectPauta.innerHTML = '<option value="">Nenhuma pauta associada</option>';
             const entityIdeas = contentIdeas.filter(i => i.entityId === activeProfile.id && i.status === 'pauta');
@@ -547,28 +738,52 @@ function renderDrafts() {
         }
 
         window.confirmPublish = function() {
-            const draftId = document.getElementById('publishDraftId').value;
+            const id = document.getElementById('publishDraftId').value;
+            const type = document.getElementById('publishType').value;
             const dateVal = document.getElementById('publishDate').value;
             const pautaId = document.getElementById('publishPauta').value;
 
-            if(!dateVal) return alert("Por favor, selecione uma data válida.");
+            if(!dateVal) return showAlert("Por favor, selecione uma data válida.");
 
             const pubDate = new Date(dateVal);
             const isFuture = pubDate > new Date();
             const status = isFuture ? 'Agendado' : 'Publicado';
 
-            // Salva Rascunho
             let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
-            const index = drafts.findIndex(d => d.id === draftId);
-            if(index > -1) {
-                drafts[index].status = status;
-                drafts[index].publishedAt = pubDate.toISOString();
-                drafts[index].impressions = drafts[index].impressions || 0;
-                drafts[index].engagement = drafts[index].engagement || 0;
-                localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+
+            if (type === 'carousel') {
+                const index = drafts.findIndex(d => d.id === id);
+                if(index > -1) {
+                    drafts[index].status = status;
+                    drafts[index].publishedAt = pubDate.toISOString();
+                    drafts[index].impressions = drafts[index].impressions || 0;
+                    drafts[index].engagement = drafts[index].engagement || 0;
+                    localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+                }
+            } else if (type === 'video') {
+                let scripts = JSON.parse(localStorage.getItem('propositum_video_scripts')) ||[];
+                const scriptIndex = scripts.findIndex(s => s.id === id);
+                if (scriptIndex > -1) {
+                    const script = scripts[scriptIndex];
+                    drafts.push({
+                        id: script.id,
+                        entityId: script.entityId,
+                        title: script.title,
+                        scriptContent: script.content,
+                        format: 'video',
+                        status: status,
+                        publishedAt: pubDate.toISOString(),
+                        impressions: 0,
+                        engagement: 0,
+                        lastEdited: script.createdAt
+                    });
+                    localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+                    
+                    scripts.splice(scriptIndex, 1);
+                    localStorage.setItem('propositum_video_scripts', JSON.stringify(scripts));
+                }
             }
 
-            // Purga Pauta
             if(pautaId) {
                 contentIdeas = contentIdeas.filter(i => i.id !== pautaId);
                 localStorage.setItem('propositum_ideas', JSON.stringify(contentIdeas));
@@ -577,12 +792,17 @@ function renderDrafts() {
 
             closePublishModal();
             renderDrafts();
+            renderScripts();
             renderPublished();
             calculateMetrics();
         }
 
-        // Abre Editor
         window.openDraft = function(draftId) { window.location.href = `editor.html?startupId=${activeProfile.id}&draftId=${draftId}`; }
+
+        window.deleteDraft = function(e, draftId) {
+            e.stopPropagation();
+            showDeleteConfirm("Excluir Histórico?", "Tem certeza que deseja excluir este conteúdo permanentemente da sua inteligência de dados?", draftId, 'draft');
+        }
 
         // --- SISTEMA DE IDEIAS E PAUTAS ---
         function renderIdeias() {
@@ -599,8 +819,7 @@ function renderDrafts() {
                     listIdeias.innerHTML += `<div class="ideia-card"><div class="ideia-text">${item.text}</div><div class="ideia-actions"><button class="btn-card btn-approve" onclick="mudarStatus('${item.id}', 'pauta')"><i data-lucide="check" style="width: 14px;"></i> Aprovar</button><button class="btn-card btn-delete" onclick="deletarIdeia('${item.id}')"><i data-lucide="trash-2" style="width: 14px;"></i></button></div></div>`;
                 } else if (item.status === 'pauta') {
                     countP++;
-                    // CORREÇÃO: Passando o item.id no enviarParaStudio ao invés do item.text
-                    listPautas.innerHTML += `<div class="ideia-card" style="border-left: 3px solid var(--brand-color);"><div class="ideia-text">${item.text}</div><div class="ideia-actions"><button class="btn-card btn-generate" onclick="enviarParaStudio('${item.id}')"><i data-lucide="zap" style="width: 14px;"></i> Gerar Carrossel</button><button class="btn-card btn-delete" title="Voltar para ideias" onclick="mudarStatus('${item.id}', 'ideia')"><i data-lucide="corner-up-left" style="width: 14px;"></i></button></div></div>`;
+                    listPautas.innerHTML += `<div class="ideia-card" style="border-left: 3px solid var(--brand-color);"><div class="ideia-text">${item.text}</div><div class="ideia-actions"><button class="btn-card btn-generate" onclick="openContentSetup('${item.id}')"><i data-lucide="zap" style="width: 14px;"></i> Criar Conteúdo</button><button class="btn-card btn-delete" title="Voltar para ideias" onclick="mudarStatus('${item.id}', 'ideia')"><i data-lucide="corner-up-left" style="width: 14px;"></i></button></div></div>`;
                 }
             });
 
@@ -634,15 +853,21 @@ function renderDrafts() {
 
         window.gerarIdeiasIA = async function() {
             const apiKey = localStorage.getItem('propositum_api_key');
-            if (!apiKey) return alert("Atenção: Configure sua chave da API do Gemini nas configurações globais (Dashboard) para usar a Inteligência Artificial.");
+            if (!apiKey) return showAlert("Atenção: Configure sua chave da API do Gemini nas configurações globais (Dashboard) para usar a Inteligência Artificial.");
             
             const btn = document.querySelector('.btn-ai-brainstorm');
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width: 18px;"></i> Processando...'; btn.disabled = true;
+            lucide.createIcons();
 
             try {
                 const contexto = activeProfile.vision ? `Tom de voz e regras da marca: ${activeProfile.vision}` : '';
-                const prompt = `Aja como o estrategista de conteúdo sênior da marca "${activeProfile.name}". ${contexto}. Gere exatamente 3 ideias criativas, diretas e curtas (máximo 1 linha cada) de pautas focadas em conversão e autoridade para um carrossel no Instagram. Retorne APENAS as ideias, sem numeração, sem markdown e separadas por quebra de linha.`;
+                const performanceContext = getTopPerformingContext();
+
+                const prompt = `Aja como o estrategista de conteúdo sênior da marca "${activeProfile.name}". ${contexto}. 
+${performanceContext}
+Gere exatamente 3 ideias criativas, diretas e curtas (máximo 1 linha cada) de pautas focadas em retenção, conversão e autoridade no Instagram/TikTok. 
+Retorne APENAS as ideias, sem numeração, sem markdown e separadas por quebra de linha.`;
 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts:[{ text: prompt }] }] }) });
                 if (!response.ok) throw new Error("Erro na API Key");
@@ -651,28 +876,248 @@ function renderDrafts() {
                 const text = data.candidates[0].content.parts[0].text;
                 text.split('\n').filter(i => i.trim() !== '').forEach(ideia => adicionarIdeia(ideia.replace(/^[-*0-9.]*\s*/, '').trim()));
             } catch (error) {
-                console.error(error); alert("Erro ao conectar com a IA. Verifique sua chave API.");
+                console.error(error); showAlert("Erro ao conectar com a IA. Verifique sua chave API.");
             } finally {
                 btn.innerHTML = originalText; btn.disabled = false; lucide.createIcons();
             }
         }
 
-        window.enviarParaStudio = function(id) { 
-            const item = contentIdeas.find(i => i.id === id);
-            if (item) {
-                window.location.href = `editor.html?startupId=${activeProfile.id}&theme=${encodeURIComponent(item.text)}`; 
+        // --- SISTEMA DE CRIAÇÃO E ROTEIROS DE VÍDEO (NOVO) ---
+        
+        window.selectFormat = function(val) {
+            document.getElementById('setupFormat').value = val;
+            document.querySelectorAll('.format-card').forEach(c => c.classList.remove('active'));
+            document.querySelector(`.format-card[data-value="${val}"]`).classList.add('active');
+
+            const btn = document.getElementById('btnConfirmSetup');
+            if (val === 'carousel') {
+                btn.innerHTML = 'Ir para o Studio';
+            } else {
+                btn.innerHTML = 'Gerar Roteiro com IA';
             }
+        }
+
+        window.openContentSetup = function(id) {
+            document.getElementById('setupPautaId').value = id;
+            selectFormat('carousel'); // Reset
+            document.getElementById('setupContext').value = '';
+            
+            const modal = document.getElementById('contentSetupModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        window.closeContentSetup = function() {
+            const modal = document.getElementById('contentSetupModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 400);
+        }
+
+        window.gerarRoteiroVideoIA = async function(theme, context) {
+            const apiKey = localStorage.getItem('propositum_api_key');
+            if (!apiKey) throw new Error("Atenção: Configure sua chave da API do Gemini nas configurações globais.");
+
+            const brandContext = activeProfile.vision ? `Aja como a marca "${activeProfile.name}". Tom de voz: "${activeProfile.vision}".` : '';
+            const performanceContext = getTopPerformingContext();
+            
+            const prompt = `Você é um Copywriter e Estrategista de Vídeos Curtos (Reels/TikTok) especialista em retenção.
+${brandContext}
+${performanceContext}
+
+Crie um roteiro de vídeo altamente engajador sobre o tema: "${theme}".
+CONTEXTO ADICIONAL / DIRECIONAMENTO: "${context || 'Nenhum contexto adicional fornecido.'}"
+
+ESTRUTURA OBRIGATÓRIA:
+Escreva APENAS o texto puro que a pessoa vai ler/falar para a câmera. 
+NÃO adicione instruções de (Visual), (Áudio) ou (Speaker). Oculte qualquer formatação de edição. Divida estritamente nestes 3 blocos:
+
+**GANCHO (0-3s)**[Frase de impacto inicial direta ao ponto]
+
+**DESENVOLVIMENTO**[Corpo do roteiro, texto dinâmico, rápido e em linguagem falada natural]
+
+**CTA (Call To Action)**
+[Chamada para ação clara e final]`;
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts:[{ text: prompt }] }] })
+            });
+
+            if (!response.ok) throw new Error("Erro na API Key. Verifique se sua chave do Gemini está correta.");
+            const data = await response.json();
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        window.confirmContentSetup = async function() {
+            const id = document.getElementById('setupPautaId').value;
+            const format = document.getElementById('setupFormat').value;
+            const context = document.getElementById('setupContext').value.trim();
+            const pauta = contentIdeas.find(i => i.id === id);
+            
+            if(!pauta) return;
+
+            if(format === 'carousel') {
+                window.location.href = `editor.html?startupId=${activeProfile.id}&theme=${encodeURIComponent(pauta.text)}&context=${encodeURIComponent(context)}`;
+            } else if (format === 'video') {
+                const btn = document.getElementById('btnConfirmSetup');
+                const origText = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> <span>Gerando Roteiro...</span>';
+                btn.disabled = true;
+                lucide.createIcons();
+
+                try {
+                    const scriptText = await gerarRoteiroVideoIA(pauta.text, context);
+                    
+                    contentIdeas = contentIdeas.filter(i => i.id !== id);
+                    localStorage.setItem('propositum_ideas', JSON.stringify(contentIdeas));
+                    renderIdeias();
+
+                    let scripts = JSON.parse(localStorage.getItem('propositum_video_scripts')) ||[];
+                    const newScript = {
+                        id: 'script_' + Date.now(),
+                        entityId: activeProfile.id,
+                        title: pauta.text,
+                        content: scriptText,
+                        createdAt: new Date().toISOString()
+                    };
+                    scripts.push(newScript);
+                    localStorage.setItem('propositum_video_scripts', JSON.stringify(scripts));
+                    
+                    closeContentSetup();
+                    renderScripts();
+                    
+                    document.querySelector('.tab[data-target="scriptsContainer"]').click();
+                    openScriptView(newScript.id);
+                    
+                } catch (e) {
+                    showAlert(e.message || "Erro inesperado ao gerar roteiro.");
+                } finally {
+                    btn.innerHTML = origText;
+                    btn.disabled = false;
+                    lucide.createIcons();
+                }
+            }
+        }
+
+        // Funções da View do Roteiro
+        function renderScripts() {
+            const container = document.getElementById('scriptsContainer');
+            const allScripts = JSON.parse(localStorage.getItem('propositum_video_scripts')) ||[];
+            const entityScripts = allScripts.filter(s => s.entityId === activeProfile.id).reverse();
+
+            if (entityScripts.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 60px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 20px;"><i data-lucide="video" style="width: 48px; height: 48px; color: #444; margin-bottom: 16px;"></i><h3 style="margin-bottom: 8px;">Nenhum roteiro gerado</h3><p style="color: #666;">Use uma Pauta Aprovada para gerar roteiros de vídeos para a sua marca.</p></div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = '';
+            entityScripts.forEach(script => {
+                const dateObj = new Date(script.createdAt);
+                const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+
+                container.innerHTML += `
+                    <div class="draft-card" style="cursor: pointer;">
+                        <div class="draft-cover" onclick="openScriptView('${script.id}')" style="height: 120px; background: rgba(var(--brand-rgb), 0.1); border-bottom: 1px solid rgba(var(--brand-rgb), 0.2);">
+                            <i data-lucide="video" style="width:48px; height:48px; color: var(--brand-color);"></i>
+                        </div>
+                        <div class="draft-info">
+                            <div class="draft-title" style="margin-bottom: 8px;">${script.title}</div>
+                            <div class="draft-meta"><span>Gerado em: ${dateStr}</span></div>
+                            
+                            <div style="display: flex; gap: 8px; margin-top: auto;">
+                                <button class="btn-card btn-publish" onclick="openPublishModal(event, '${script.id}', 'video')" style="flex: 1;">
+                                    <i data-lucide="send" style="width: 14px;"></i> Publicar
+                                </button>
+                                <button class="btn-card" onclick="deleteScript(event, '${script.id}')" style="background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid rgba(255,59,48,0.2); width: 42px; height: 42px; padding: 0;" title="Excluir Roteiro">
+                                    <i data-lucide="trash-2" style="width: 16px;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        window.openScriptView = function(id) {
+            let scripts = JSON.parse(localStorage.getItem('propositum_video_scripts')) ||[];
+            let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+            
+            let script = scripts.find(s => s.id === id);
+            if (!script) {
+                script = drafts.find(d => d.id === id && d.format === 'video');
+                if (script) {
+                    script = { ...script, content: script.scriptContent };
+                }
+            }
+            if(!script) return;
+
+            document.getElementById('scriptViewId').value = script.id;
+            document.getElementById('scriptTitle').value = script.title;
+            document.getElementById('scriptBody').value = script.content;
+
+            const modal = document.getElementById('scriptViewModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        window.closeScriptView = function() {
+            const modal = document.getElementById('scriptViewModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 400);
+        }
+
+        window.saveScript = function() {
+            const id = document.getElementById('scriptViewId').value;
+            const newTitle = document.getElementById('scriptTitle').value;
+            const newContent = document.getElementById('scriptBody').value;
+
+            let scripts = JSON.parse(localStorage.getItem('propositum_video_scripts')) ||[];
+            const scriptIndex = scripts.findIndex(s => s.id === id);
+            
+            if(scriptIndex > -1) {
+                scripts[scriptIndex].title = newTitle;
+                scripts[scriptIndex].content = newContent;
+                localStorage.setItem('propositum_video_scripts', JSON.stringify(scripts));
+                renderScripts();
+            } else {
+                let drafts = JSON.parse(localStorage.getItem('propositum_drafts')) ||[];
+                const draftIndex = drafts.findIndex(d => d.id === id && d.format === 'video');
+                if (draftIndex > -1) {
+                    drafts[draftIndex].title = newTitle;
+                    drafts[draftIndex].scriptContent = newContent;
+                    localStorage.setItem('propositum_drafts', JSON.stringify(drafts));
+                    renderPublished();
+                }
+            }
+            closeScriptView();
+        }
+
+        window.copyScript = function() {
+            const text = document.getElementById('scriptBody').value;
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert("Roteiro copiado com sucesso!");
+            });
+        }
+
+        window.deleteScript = function(e, id) {
+            e.stopPropagation();
+            showDeleteConfirm("Excluir Roteiro?", "Tem certeza que deseja excluir este roteiro de vídeo permanentemente?", id, 'script');
         }
 
         // --- INICIALIZAÇÃO E ABAS ---
         renderDrafts();
         renderPublished();
         renderIdeias();
+        renderScripts();
         calculateMetrics();
 
         const tabs = document.querySelectorAll('.tab');
         const sections = {
             'draftsContainer': document.getElementById('draftsContainer'),
+            'scriptsContainer': document.getElementById('scriptsContainer'),
             'ideiasContainer': document.getElementById('ideiasContainer'),
             'publishedContainer': document.getElementById('publishedContainer')
         };
@@ -687,14 +1132,13 @@ function renderDrafts() {
                 const targetId = tab.getAttribute('data-target');
                 sections[targetId].style.display = targetId === 'ideiasContainer' ? 'block' : 'grid';
                 
-                // Recalcula pra garantir que o status Agendado -> Publicado funcione se a aba ficou aberta muito tempo
                 if(targetId === 'publishedContainer') {
                     calculateMetrics();
                     renderPublished();
                 }
             });
         });
-
+        
         window.deleteDraft = function(e, draftId) {
             // Impede que o clique no botão abra o editor (porque o botão está dentro do card)
             e.stopPropagation();

@@ -36,12 +36,17 @@ export function getMockData(template, topic, slideCount = 4) {
     }
 }
 
-export async function fetchGeminiData(theme, template, apiKey, activeProfile, slideCount) {
+export async function fetchGeminiData(theme, template, apiKey, activeProfile, slideCount, context = '') {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
     
     let brandContext = "";
     if (activeProfile && activeProfile.vision) {
         brandContext = `IMPORTANTE: Aja como a marca "${activeProfile.name}". Tom de voz e diretrizes: "${activeProfile.vision}". Crie os textos refletindo essa personalidade.`;
+    }
+
+    let extraContext = "";
+    if (context && context.trim() !== "") {
+        extraContext = `\nCONTEXTO ADICIONAL FORNECIDO PELO USUÁRIO (Siga rigorosamente estas instruções para o conteúdo): "${context}"\n`;
     }
 
     const isStructureA =['layout-tech', 'layout-minimal', 'layout-neon', 'layout-glass', 'layout-saas-3d', 'layout-hex-corp'].includes(template);
@@ -54,7 +59,6 @@ BLOCOS PARA OS SLIDES DO MEIO:
 - "features", "news": Propriedades obrigatórias -> "title", "show_image" (booleano), "items" (array com 2 a 4 itens contendo "title" e "desc").
 `;
 
-    // Montando ESTRUTURA exigida para a array baseada na quantidade desejada pelo usuário
     const slidesSchema =[];
     slidesSchema.push(`{ "type": "cover", "text_align": "center", "image_mode": "background", "tag": "ESCREVA A TAG", "title": "ESCREVA O TÍTULO" }`);
     for (let i = 0; i < slideCount - 2; i++) {
@@ -67,6 +71,7 @@ Você é um Copywriter e Diretor de Arte Sênior.
 Crie um carrossel de EXATAMENTE ${slideCount} SLIDES sobre o tema: "${theme}".
 
 ${brandContext}
+${extraContext}
 
 REGRA DE DIREÇÃO DE ARTE (OBRIGATÓRIO):
 Para CADA slide, escolha:

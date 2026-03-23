@@ -6,9 +6,11 @@ import { initEditorEvents } from './modules/editor.js';
 import { initDragAndDropEvents } from './modules/dragDrop.js';
 import { downloadCarousel } from './modules/export.js';
 
+
 const urlParams = new URLSearchParams(window.location.search);
 const startupId = urlParams.get('startupId');
-const themeParam = urlParams.get('theme'); 
+const themeParam = urlParams.get('theme');
+const contextParam = urlParams.get('context') || '';
 
 if (themeParam) {
     document.getElementById('themeInput').value = themeParam;
@@ -219,7 +221,7 @@ document.getElementById('btnConfirmGenerate').addEventListener('click', async ()
                 console.log("Nenhum tema definido. Carrossel gerado com texto de marcação.");
             }
         } else {
-            const aiData = await fetchGeminiData(themeStr, template, apiKey, AppState.activeProfile, slideCount);
+            const aiData = await fetchGeminiData(themeStr, template, apiKey, AppState.activeProfile, slideCount, contextParam);
             if (aiData && aiData.slides) {
                 const category = aiData.image_category || "office";
                 renderCarousel(aiData, template, category);
